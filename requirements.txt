@@ -1,0 +1,4 @@
+Django
+django-tastypie
+iso8601plus
+validictory
