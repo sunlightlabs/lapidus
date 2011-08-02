@@ -35,8 +35,8 @@ class ObservationInline(admin.TabularInline):
 
 class MetricAdmin(admin.ModelAdmin):
     inlines = (ObservationInline,)
-    list_display = ('project', 'unit', 'is_cumulative')
+    list_display = ('project', 'unit', 'type', 'is_cumulative')
     list_display_links = ('project', 'unit')
-    list_filter = ('is_cumulative',)
+    list_filter = ('project', 'is_cumulative','type','unit__category')
 
 admin.site.register(Metric, MetricAdmin)
