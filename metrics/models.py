@@ -1,4 +1,5 @@
 from django.db import models
+from lapidus.metrics import daterange
 from lapidus.metrics.validation import LIST_SCHEMA
 import json
 import uuid
@@ -70,6 +71,17 @@ class Metric(models.Model):
     
     def __unicode__(self):
         return u"%s %s" % (self.project.name, self.unit.name)
+    
+    def date_range(self, start, end):
+        
+        if self.unit.period != 2:
+            raise ValueError('cannot iterate over dates for a non-daily metric')
+            
+        obs = self.observations.filter(from_datetime__gte=start, from_datetime__lte=end)
+        obs = dict((ob.from_datetime.date().isoformat(), ob) for ob in obs)
+        
+        return [(d, obs.get(d.date().isoformat(), None)) for d in daterange(start, end)]
+        
 
 class Observation(models.Model):
     metric = models.ForeignKey(Metric, related_name="observations")
