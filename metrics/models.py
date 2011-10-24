@@ -101,5 +101,4 @@ class Observation(models.Model):
             data = json.loads(self.payload)
             validictory.validate(data, LIST_SCHEMA)
         super(Observation, self).save(**kwargs)
-        
-        
+
