@@ -1,4 +1,4 @@
-# Django settings for asdf project.
+# Django settings for lapidus.
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -61,6 +61,7 @@ INSTALLED_APPS = (
 	'tastypie',
     'lapidus.metrics',
     'lapidus.dashboard',
+    'lapidus.loading',
 )
 
 # A sample logging configuration. The only tangible logging

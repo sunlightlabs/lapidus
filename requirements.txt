@@ -2,3 +2,4 @@ Django
 django-tastypie
 iso8601plus
 validictory
+-e git://github.com/clintecker/python-googleanalytics.git#egg=python-googleanalytics

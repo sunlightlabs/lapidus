@@ -1,0 +1,63 @@
+{
+    "defaults": {
+        "metrics": [
+            {
+                "name": "Unique Visits",
+                "metrics": ["visitors"],
+                "type": "value"
+            },
+            {
+                "name": "Visits",
+                "metrics": ["visits"],
+                "type": "value"
+            },
+            {
+                "name": "New Visits",
+                "metrics": ["newVisits"],
+                "type": "value"
+            },
+            {
+                "name": "Pageviews",
+                "metrics": ["pageviews"],
+                "type": "value"
+            },
+            {
+                "name": "Time on Site",
+                "metrics": ["timeOnSite"],
+                "type": "value"
+            },
+            {
+                "name": "Bounce Rate",
+                "metrics": ["visitBounceRate"],
+                "type": "value"
+            },
+            {
+                "name": "Top traffic referrers",
+                "metrics": ["visitors"],
+                "dimensions": ["source"],
+                "type": "list",
+                "maxResults": 5
+            }
+        ]
+    },
+    "projects": [
+        {
+            "slug": "sunlight-foundation",
+            "profile_id": "2246960"
+        },
+        {
+            "slug": "sunlight-live",
+            "profile_id": "51100513"
+        },
+        {
+            "slug": "influence-explorer",
+            "profile_id": "35455102"
+        },
+        {
+            "slug": "poligraft",
+            "profile_id": "35159233"
+        }
+        
+    
+    ]
+}
