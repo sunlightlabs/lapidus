@@ -87,7 +87,7 @@ class Observation(models.Model):
     metric = models.ForeignKey(Metric, related_name="observations")
     from_datetime = models.DateTimeField()
     to_datetime = models.DateTimeField()
-    value = models.IntegerField(blank=True, null=True)
+    value = models.FloatField(blank=True, null=True)
     payload = models.TextField(blank=True)
     
     class Meta:
