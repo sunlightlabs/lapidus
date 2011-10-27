@@ -35,3 +35,7 @@ TEMPLATE_DIRS = (
 )
 
 API_MASTER_KEY = ''
+
+GA_CONFIG = os.path.join(PROJECT_ROOT, '')
+GA_EMAIL = ''
+GA_PASSWORD = '' 
