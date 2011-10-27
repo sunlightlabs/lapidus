@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% for p in object_list %}
+        <section id="{{ p.slug }}">
+            <h1><a href="">{{ p.name }}</a></h1>
+        </section>
+    {% endfor %}
+{% endblock %}
