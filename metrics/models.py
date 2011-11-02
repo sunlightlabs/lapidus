@@ -1,9 +1,15 @@
 from django.db import models
 from lapidus.metrics import daterange
-from lapidus.metrics.validation import LIST_SCHEMA
+# from lapidus.metrics.validation import LIST_SCHEMA
 import json
 import uuid
-import validictory
+# import validictory
+
+from django.contrib.contenttypes.models import ContentType
+from django.db.models import Q
+
+from django_extensions.db.fields.json import JSONField
+
 
 CATEGORIES = (
     (1, 'web'),
@@ -21,11 +27,11 @@ PERIODS = (
     (6, 'other'),
 )
 
-METRIC_TYPES = (
-    ('value', 'value'),
-    ('list', 'list'),
-    ('', 'other'),
-)
+# METRIC_TYPES = (
+#     ('value', 'value'),
+#     ('list', 'list'),
+#     ('', 'other'),
+# )
 
 class Unit(models.Model):
     name = models.CharField(max_length=128)
@@ -63,7 +69,12 @@ class Annotation(models.Model):
 class Metric(models.Model):
     project = models.ForeignKey(Project, related_name="metrics")
     unit = models.ForeignKey(Unit, related_name="metrics")
-    type = models.CharField(max_length=16, choices=METRIC_TYPES, default='')
+    # type = models.CharField(max_length=16, choices=METRIC_TYPES, default='')
+    observation_type = models.ForeignKey(ContentType, 
+                                            limit_choices_to= Q(
+                                                Q(app_label='metrics'),
+                                                Q(model='countobservation') | Q(model='listobservation') | Q(model='ratioobservation')                                            
+                                            ))
     is_cumulative = models.BooleanField(default=False)
     
     class Meta:
@@ -87,18 +98,38 @@ class Observation(models.Model):
     metric = models.ForeignKey(Metric, related_name="observations")
     from_datetime = models.DateTimeField()
     to_datetime = models.DateTimeField()
-    value = models.FloatField(blank=True, null=True)
-    payload = models.TextField(blank=True)
     
     class Meta:
         ordering = ('-from_datetime',)
+
+class CountObservation(Observation):
+    """Stores a metric observation whose value is a count of some unit"""
+    value = models.IntegerField(blank=True, null=True)
+
+    def __unicode__(self):
+        return u"<{metric}: {value}>".format(metric=self.metric, value=self.value)
+
+class ListObservation(Observation):
+    """Stores a metric observation whose value is a list/tuple stored as JSON"""
+    value = JSONField()
     
     def __unicode__(self):
-        return u"%s" % self.value
+        return u"<{metric}>".format(metric=self.metric)
 
-    def save(self, **kwargs):
-        if self.metric.type == 'list' and self.payload:
-            data = json.loads(self.payload)
-            validictory.validate(data, LIST_SCHEMA)
-        super(Observation, self).save(**kwargs)
+class RatioObservation(Observation):
+    """Relates two CountObservation objects to create a ratio (which can represent a percentage, etc)"""
+    antecedent = models.ForeignKey(CountObservation, related_name="antecedents")
+    consequent = models.ForeignKey(CountObservation, related_name="consequents")
+    
+    def value(self):
+        return float(self.antecedent.value)/float(self.consequent.value)
+    
+    def save(self, *args, **kwargs):
+        self.from_datetime = self.antecedent.from_datetime
+        self.to_datetime = self.antecedent.to_datetime
+        super(RatioObservation, self).save(*args, **kwargs)
+        
+    
+    def __unicode__(self):
+        return u"<{metric}: {antecedent}/{consequent}>".format(metric=self.metric, antecedent=self.antecedent, consequent=self.consequent)
 

@@ -1,5 +1,6 @@
-Django
-django-tastypie
+Django==1.3.1
+django-tastypie>=0.9.10
+django-extensions==0.8-pre
 iso8601plus
 validictory
 -e git://github.com/clintecker/python-googleanalytics.git#egg=python-googleanalytics

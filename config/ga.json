@@ -4,32 +4,32 @@
             {
                 "name": "Unique Visits",
                 "metrics": ["visitors"],
-                "type": "value"
+                "type": "count"
             },
             {
                 "name": "Visits",
                 "metrics": ["visits"],
-                "type": "value"
+                "type": "count"
             },
             {
                 "name": "New Visits",
                 "metrics": ["newVisits"],
-                "type": "value"
+                "type": "count"
             },
             {
                 "name": "Pageviews",
                 "metrics": ["pageviews"],
-                "type": "value"
+                "type": "count"
             },
             {
                 "name": "Time on Site",
                 "metrics": ["timeOnSite"],
-                "type": "value"
+                "type": "count"
             },
             {
-                "name": "Bounce Rate",
-                "metrics": ["visitBounceRate"],
-                "type": "value"
+                "name": "Bounces",
+                "metrics": ["bounces"],
+                "type": "count"
             },
             {
                 "name": "Top traffic referrers",
@@ -56,6 +56,10 @@
         {
             "slug": "poligraft",
             "profile_id": "35159233"
+        },
+        {
+            "slug": "politiwidgets",
+            "profile_id": "34075661"
         }
         
     

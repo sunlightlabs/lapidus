@@ -3,8 +3,9 @@ from django.core.management.base import BaseCommand, CommandError
 from django.template.defaultfilters import slugify
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+from django.contrib.contenttypes.models import ContentType
 from googleanalytics import Connection
-from lapidus.metrics.models import Project, Metric, Unit, Observation
+from lapidus.metrics.models import Project, Metric, Unit, CountObservation, ListObservation
 import datetime
 import logging
 import json
@@ -22,10 +23,9 @@ class Command(BaseCommand):
         except IntegrityError, e:
             raise CommandError("[%s]:\n\t%s" % (obj, ','.join(e.messages)))
     
-    
-    def _generate_list_payload(self, data, limit=None):
+    def _generate_list(self, data, limit=None):
         sorteddata = sorted(data, lambda x,y: cmp(x.metrics[0].value,y.metrics[0].value), None, True)
-        return json.dumps([ { 'rank': n, 'name': d.dimensions[0].value, 'value': d.metrics[0].value } for n,d in enumerate(sorteddata) ][:limit])
+        return [ { 'rank': n, 'name': d.dimensions[0].value, 'value': d.metrics[0].value } for n,d in enumerate(sorteddata) ][:limit]
     
     def handle(self, *args, **options):
         verbosity = int(options.get('verbosity'))
@@ -53,6 +53,8 @@ class Command(BaseCommand):
                     
                     for metric in metrics:
                         # Check for existence of Unit and Metric and create if needed.
+                        content_type = ContentType.objects.get(app_label='metrics', model= metric.get('type', 'count')+'observation')
+                        observation_class = content_type.model_class()
                         try:
                             u = Unit.objects.get(name=metric['name'])
                         except Unit.DoesNotExist:
@@ -60,13 +62,14 @@ class Command(BaseCommand):
                             if verbosity >= 2:
                                 self.stdout.write('Unit "{0}\n"'.format(u.name))
                         self._save_object(u)
+                        
                         try:
                             m = p.metrics.get(unit=u)
                         except Metric.DoesNotExist:
-                            m = Metric.objects.create(project=p, unit=u, type=metric.get('type', 'value'))
+                            m = Metric.objects.create(project=p, unit=u, observation_type=content_type)
                         self._save_object(m)
                         if verbosity >= 2:
-                            self.stdout.write('Metric "{name}" of type "{type}" for "{project}"\n'.format(name=u.name, project=p.name, type=m.type))
+                            self.stdout.write('Metric "{name}" of type "{content_type}" for "{project}"\n'.format(name=u.name, project=p.name, content_type=content_type))
                         
                         data = acct.get_data(
                             start_date=yesterday.date(),
@@ -76,24 +79,24 @@ class Command(BaseCommand):
                         )
                         
                         try:
-                            o = Observation.objects.get(
+                            o = observation_class.objects.get(
                                 metric=m,
                                 from_datetime=start,
                                 to_datetime=end,
                             )
                             # if m.type = list, we need to generate a list of objects with rank & name k/v pairs, and possibly a value k/v from the data returned...
-                        except Observation.DoesNotExist:
-                            o = Observation.objects.create(
+                        except observation_class.DoesNotExist:
+                            o = observation_class.objects.create(
                                 metric=m,
                                 from_datetime=start,
                                 to_datetime=end,
                             )
-                        if m.type == 'list':
-                            o.payload = self._generate_list_payload(data)
+                        if observation_class is ListObservation:
+                            o.value = self._generate_list(data)
                         else:
-                            o.value = data[0].metrics[0].value
+                            o.value = float(data[0].metrics[0].value)
                         if verbosity >= 2:
-                            self.stdout.write('Observation for metric "{0}" at "{1}" with \npayload:\n{2}\nvalue:\n{3}\n'.format(u.name, start, o.payload, o.value))
+                            self.stdout.write('Observation for metric "{0}" at "{1}" with value:\n{2}\n'.format(u.name, start, o.value))
                         self._save_object(o)
             
             except Project.DoesNotExist:
