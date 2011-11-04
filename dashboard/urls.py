@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
-from dashboard.views import ProjectView
+# from dashboard.views import ProjectView
 
-urlpatterns = patterns('',
-    url(r'^$', ProjectView.as_view()),
+urlpatterns = patterns('dashboard.views',
+    url(r'^$', 'dashboard_list'),
 )
