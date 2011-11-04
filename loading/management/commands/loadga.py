@@ -5,9 +5,8 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.contrib.contenttypes.models import ContentType
 from googleanalytics import Connection
-from lapidus.metrics.models import Project, Metric, Unit, CountObservation, ListObservation
+from lapidus.metrics.models import Project, Metric, Unit, CountObservation, ListObservation, UNIT_TYPES
 import datetime
-import logging
 import json
 
 class Command(BaseCommand):
@@ -53,20 +52,26 @@ class Command(BaseCommand):
                     
                     for metric in metrics:
                         # Check for existence of Unit and Metric and create if needed.
-                        content_type = ContentType.objects.get(app_label='metrics', model= metric.get('type', 'count')+'observation')
-                        observation_class = content_type.model_class()
+                        # content_type = ContentType.objects.get(app_label='metrics', model= metric.get('type', 'count')+'observation')
+                        # observation_class = content_type.model_class()
                         try:
                             u = Unit.objects.get(name=metric['name'])
                         except Unit.DoesNotExist:
-                            u = Unit.objects.create(name=metric['name'], slug=slugify(metric['name']), category=1, period=1)
+                            u = Unit.objects.create(name=metric['name'], slug=slugify(metric['name']), category=1, period=2)
+                            unit_type = metric.get('type', False)
+                            if unit_type:
+                                u.observation_unit = unit_type
+                            else:
+                                u.observation_unit = UNIT_TYPES[0][0]
                             if verbosity >= 2:
                                 self.stdout.write('Unit "{0}\n"'.format(u.name))
                         self._save_object(u)
+                        observation_class = u.observation_type.model_class()
                         
                         try:
                             m = p.metrics.get(unit=u)
                         except Metric.DoesNotExist:
-                            m = Metric.objects.create(project=p, unit=u, observation_type=content_type)
+                            m = Metric.objects.create(project=p, unit=u)
                         self._save_object(m)
                         if verbosity >= 2:
                             self.stdout.write('Metric "{name}" of type "{content_type}" for "{project}"\n'.format(name=u.name, project=p.name, content_type=content_type))

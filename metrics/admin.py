@@ -4,7 +4,6 @@ from lapidus.metrics.models import Annotation, Metric, Observation, CountObserva
 
 # import the logging library
 import logging
-
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
@@ -12,7 +11,7 @@ logger = logging.getLogger(__name__)
 # units
 
 class UnitAdmin(admin.ModelAdmin):
-    list_display = ('name', 'slug', 'category', 'period')
+    list_display = ('name', 'slug', 'observation_unit', 'category', 'period')
     list_display_links = ('name',)
     list_filter = ('category', 'period')
     prepopulated_fields = {'slug': ('name',)}
@@ -56,9 +55,9 @@ class RatioObservationInline(admin.TabularInline):
 
 class MetricAdmin(admin.ModelAdmin):
     # inlines = []
-    list_display = ('project', 'unit', 'observation_type', 'is_cumulative')
+    list_display = ('project', 'unit', 'is_cumulative')
     list_display_links = ('project', 'unit')
-    list_filter = ('project', 'is_cumulative','observation_type','unit__category')
+    list_filter = ('project', 'is_cumulative', 'unit', 'unit__category')
     
     def add_view(self, request, form_url='', extra_context=None):
         self.inlines = []
@@ -76,7 +75,7 @@ class MetricAdmin(admin.ModelAdmin):
 
     def append_inline_class_and_instance(self, request, object_id):
         obj = self.get_object(request, unquote(object_id))
-        model_class = obj.observation_type.model_class()
+        model_class = obj.unit.observation_type.model_class()
         observation_inlines = {
                 CountObservationInline.model: CountObservationInline, 
                 ListObservationInline.model : ListObservationInline, 

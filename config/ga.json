@@ -24,7 +24,7 @@
             {
                 "name": "Time on Site",
                 "metrics": ["timeOnSite"],
-                "type": "count"
+                "type": "seconds"
             },
             {
                 "name": "Bounces",

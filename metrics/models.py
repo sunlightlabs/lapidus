@@ -10,6 +10,11 @@ from django.db.models import Q
 
 from django_extensions.db.fields.json import JSONField
 
+# import the logging library
+import logging
+# Get an instance of a logger
+logger = logging.getLogger(__name__)
+
 
 CATEGORIES = (
     (1, 'web'),
@@ -33,17 +38,40 @@ PERIODS = (
 #     ('', 'other'),
 # )
 
+UNIT_TYPES = (
+    ('count',   'countobservation'),
+    ('seconds', 'countobservation'),    
+    ('list',    'listobservation'),    
+    ('ratio',   'ratioobservation'),            
+)
+
 class Unit(models.Model):
     name = models.CharField(max_length=128)
     slug = models.SlugField(unique=True)
     category = models.IntegerField(choices=CATEGORIES)
     period = models.IntegerField(choices=PERIODS)
+    observation_type = models.ForeignKey(ContentType, editable=False, blank=True, null=True,
+                                            limit_choices_to= Q(
+                                                Q(app_label='metrics'),
+                                                Q(model='countobservation') | Q(model='listobservation') | Q(model='ratioobservation')                                            
+                                            ))
+    observation_unit = models.CharField(max_length=255, default='count', choices=UNIT_TYPES)
     
     class Meta:
         ordering = ('-category', 'name')
     
     def __unicode__(self):
         return u"%s: %s" % (self.get_category_display(), self.name)
+    
+    def _set_observation_type_from_unit(self):
+        unit_name, unit_model = zip(*UNIT_TYPES)
+        model = unit_model[unit_name.index(self.observation_unit)]
+        self.observation_type = ContentType.objects.get(app_label='metrics', model=model)
+    
+    def save(self, *args, **kwargs):
+        self._set_observation_type_from_unit()
+        super(Unit, self).save(*args, **kwargs)
+        
 
 class Project(models.Model):
     name = models.CharField(max_length=128)
@@ -69,12 +97,6 @@ class Annotation(models.Model):
 class Metric(models.Model):
     project = models.ForeignKey(Project, related_name="metrics")
     unit = models.ForeignKey(Unit, related_name="metrics")
-    # type = models.CharField(max_length=16, choices=METRIC_TYPES, default='')
-    observation_type = models.ForeignKey(ContentType, 
-                                            limit_choices_to= Q(
-                                                Q(app_label='metrics'),
-                                                Q(model='countobservation') | Q(model='listobservation') | Q(model='ratioobservation')                                            
-                                            ))
     is_cumulative = models.BooleanField(default=False)
     
     class Meta:
