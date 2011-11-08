@@ -1,0 +1,13 @@
+[
+    {   
+        "name"      : "Bounce Rate",
+        "antecedent" : "bounces",
+        "consequent": "visits"
+    },                
+    {                 
+        "name"      : "Pageviews per Visit",
+        "antecedent" : "pageviews",
+        "consequent": "visits"
+    }
+    
+]
