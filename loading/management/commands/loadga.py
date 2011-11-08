@@ -39,7 +39,6 @@ class Command(BaseCommand):
         for project in config['projects']:
             
             try:
-                
                 p = Project.objects.get(slug=project['slug'])
                 
                 if project.has_key('profile_id'):
@@ -52,12 +51,10 @@ class Command(BaseCommand):
                     
                     for metric in metrics:
                         # Check for existence of Unit and Metric and create if needed.
-                        # content_type = ContentType.objects.get(app_label='metrics', model= metric.get('type', 'count')+'observation')
-                        # observation_class = content_type.model_class()
                         try:
                             u = Unit.objects.get(name=metric['name'])
                         except Unit.DoesNotExist:
-                            u = Unit.objects.create(name=metric['name'], slug=slugify(metric['name']), category=1, period=2)
+                            u = Unit(name=metric['name'], slug=slugify(metric['name']), category=1, period=2)
                             unit_type = metric.get('type', False)
                             if unit_type:
                                 u.observation_unit = unit_type
@@ -67,12 +64,8 @@ class Command(BaseCommand):
                                 self.stdout.write('Unit "{0}\n"'.format(u.name))
                         self._save_object(u)
                         observation_class = u.observation_type.model_class()
-                        
-                        try:
-                            m = p.metrics.get(unit=u)
-                        except Metric.DoesNotExist:
-                            m = Metric.objects.create(project=p, unit=u)
-                        self._save_object(m)
+
+                        (m, m_created) = p.metrics.get_or_create(project=p, unit=u)
                         if verbosity >= 2:
                             self.stdout.write('Metric "{name}" of type "{content_type}" for "{project}"\n'.format(name=u.name, project=p.name, content_type=content_type))
                         
@@ -89,9 +82,8 @@ class Command(BaseCommand):
                                 from_datetime=start,
                                 to_datetime=end,
                             )
-                            # if m.type = list, we need to generate a list of objects with rank & name k/v pairs, and possibly a value k/v from the data returned...
                         except observation_class.DoesNotExist:
-                            o = observation_class.objects.create(
+                            o = observation_class(
                                 metric=m,
                                 from_datetime=start,
                                 to_datetime=end,
@@ -99,7 +91,7 @@ class Command(BaseCommand):
                         if observation_class is ListObservation:
                             o.value = self._generate_list(data)
                         else:
-                            o.value = float(data[0].metrics[0].value)
+                            o.value = float(data[0].metrics[0].value) # certain data comes back as a float (time on site), so easier to handle as such and let mode convert
                         if verbosity >= 2:
                             self.stdout.write('Observation for metric "{0}" at "{1}" with value:\n{2}\n'.format(u.name, start, o.value))
                         self._save_object(o)

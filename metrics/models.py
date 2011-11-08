@@ -44,6 +44,7 @@ UNIT_TYPES = (
     ('list',    'listobservation'),    
     ('ratio',   'ratioobservation'),            
 )
+unit_name, unit_model = zip(*UNIT_TYPES)
 
 class Unit(models.Model):
     name = models.CharField(max_length=128)
@@ -64,7 +65,6 @@ class Unit(models.Model):
         return u"%s: %s" % (self.get_category_display(), self.name)
     
     def _set_observation_type_from_unit(self):
-        unit_name, unit_model = zip(*UNIT_TYPES)
         model = unit_model[unit_name.index(self.observation_unit)]
         self.observation_type = ContentType.objects.get(app_label='metrics', model=model)
     
