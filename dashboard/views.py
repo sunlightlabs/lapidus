@@ -1,8 +1,9 @@
 from metrics.models import Project, Metric, Observation
-from dashboard.models import UnitCollection
+from dashboard.models import UnitCollection, Unit
 from django.views.generic import ListView
 from django.shortcuts import render
 from django.http import HttpResponse
+from django.db.models import Q
 
 import datetime
 
@@ -19,35 +20,44 @@ class ProjectView(ListView):
     context_object_name="project_list"
     template_name="dashboard/project_list.html"
     
-# TODO change args so if no year/mo/day provided, we default to yesterday?
+# TODO make it find latest available data.
 def dashboard_list(request, year=None, month=None, day=None):
-    """View for displaying metric observations across all projects"""
+    """View for displaying a set of metric observations across all projects"""
+    ordered_units = UnitCollection.objects.select_related().get(name='Default').ordered_units()
+        
     if not (year and month and day):
-        yesterday = datetime.datetime.now() - datetime.timedelta(1)
-        year = yesterday.year
-        month= yesterday.month
-        day=yesterday.day
+        # TODO make get most recent day out of the ordered units, which may not be yesterday
+        latest_observation = Observation.objects.filter(metric__unit__in=ordered_units).latest('to_datetime')
+        year    = latest_observation.to_datetime.year
+        month   = latest_observation.to_datetime.month
+        day     = latest_observation.to_datetime.day
         
     from_datetime = datetime.datetime(year, month, day, 0, 0, 0)
     to_datetime = datetime.datetime(year, month, day, 23, 59, 59)
         
-    observations = Observation.objects.filter(from_datetime=from_datetime, to_datetime=to_datetime)
-    ordered_units = UnitCollection.objects.get(name='Default').ordered_units()
+    observations = Observation.objects.select_related().filter(Q(metric__is_cumulative=True) | Q(Q(from_datetime=from_datetime), Q(to_datetime=to_datetime)))
     
     object_list = []
     
-    projects = Project.objects.all()
+    projects = Project.objects.select_related().all()
     for project in projects:
         obj = {
             'project': project,
-            'observations': []
+            'observations': [],
+            'extra_observations': []
         }
         project_observations = observations.filter(metric__project=project)
         for ordered_unit in ordered_units:
             logger.debug('unit in unitcol is {unit}'.format(unit=ordered_unit.unit.slug))
-            obj['observations'].append(project_observations.get(metric__unit=ordered_unit.unit))
+            try:
+                proj_obs = project_observations.filter(metric__unit=ordered_unit.unit).latest('to_datetime')
+                obj['observations'].append(proj_obs)
+            except Exception, e:
+                logger.debug("No observation for {unit}".format(unit=ordered_unit.unit))
+                obj['observations'].append(None)
+            
         object_list.append(obj)
-
+    
     return render(request, "dashboard/project_list.html", dictionary={  'object_list': object_list,
                                                                         'ordered_units': ordered_units,
                                                                         'from_datetime': from_datetime,

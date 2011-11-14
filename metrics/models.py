@@ -76,6 +76,7 @@ class Unit(models.Model):
 class Project(models.Model):
     name = models.CharField(max_length=128)
     slug = models.SlugField(unique=True)
+    url = models.URLField(blank=True, null=True, verify_exists=False, help_text="Optional url for project websites. used for grabbing shares from the Facebook Graph")
     api_key = models.CharField(max_length=128, blank=True)
     
     class Meta:
