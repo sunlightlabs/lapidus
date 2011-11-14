@@ -39,11 +39,22 @@ PERIODS = (
 # )
 
 UNIT_TYPES = (
-    ('count',   'countobservation'),
-    ('seconds', 'countobservation'),    
-    ('list',    'listobservation'),    
-    ('ratio',   'ratioobservation'),            
+    ('count',       'Count'),
+    ('seconds',     'Seconds'),    
+    ('list',        'List'),    
+    ('ratio',       'Ratio'),            
+    ('percentage',  'Percentage'),            
 )
+
+UNIT_MAP = {
+    'count': 'countobservation',
+    'seconds': 'countobservation',
+    'list': 'listobservation',
+    'ratio': 'ratioobservation',
+    'percentage': 'ratioobservation'
+    
+}
+
 unit_name, unit_model = zip(*UNIT_TYPES)
 
 class Unit(models.Model):

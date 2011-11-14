@@ -20,10 +20,11 @@ class ProjectView(ListView):
     context_object_name="project_list"
     template_name="dashboard/project_list.html"
     
-# TODO make it find latest available data.
 def dashboard_list(request, year=None, month=None, day=None):
     """View for displaying a set of metric observations across all projects"""
     ordered_units = UnitCollection.objects.select_related().get(name='Default').ordered_units()
+    
+    extra_units = Unit.objects.all().exclude(id__in=[o.unit_id for o in ordered_units])
         
     if not (year and month and day):
         # TODO make get most recent day out of the ordered units, which may not be yesterday
@@ -55,6 +56,13 @@ def dashboard_list(request, year=None, month=None, day=None):
             except Exception, e:
                 logger.debug("No observation for {unit}".format(unit=ordered_unit.unit))
                 obj['observations'].append(None)
+        for extra_unit in extra_units:
+            try:
+                proj_obs = project_observations.filter(metric__unit=extra_unit).latest('to_datetime')
+                obj['extra_observations'].append(proj_obs)
+            except Exception, e:
+                logger.debug("No observation for {unit}".format(unit=extra_unit))
+                obj['extra_observations'].append(None)
             
         object_list.append(obj)
     
