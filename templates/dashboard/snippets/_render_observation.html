@@ -1,0 +1,24 @@
+{% load dashboard_filters humanize %}
+{% ifequal o.metric.unit.observation_type.model "listobservation" %}
+<ol>{% for item in o.listobservation.value|slice:':5' %}
+    <li>{{ item.name|urlizetrunc:25 }} <strong>[{{ item.value }}]</strong></li>{% endfor %}
+</ol>
+{% endifequal %}
+{% ifequal o.metric.unit.observation_type.model "ratioobservation" %}
+    {% ifequal o.ratioobservation.antecedent.metric.unit.observation_unit "seconds" %}
+<p>{{ o.ratioobservation.value|secondstoduration }}</p>
+    {% else %}
+        {% ifequal o.metric.unit.observation_unit "percentage"  %}
+        <p>{{ o.ratioobservation.value|percentage:2}}</p>
+        {% else %}
+        <p>{{ o.ratioobservation.value|floatformat:2}}</p>
+        {% endifequal %}
+    {% endifequal %}
+{% endifequal %}
+{% ifequal o.metric.unit.observation_type.model "countobservation" %}
+    {% ifequal o.metric.unit.observation_unit "seconds" %}
+<p>{{ o.countobservation.value|secondstoduration }}</p>
+    {% else %}
+<p>{{ o.countobservation.value|intcomma }}</p>
+    {% endifequal %}
+{% endifequal %}

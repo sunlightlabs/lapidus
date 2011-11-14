@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% load dashboard_filters %}
+{% extends "base.html" %}{% load dashboard_filters humanize %}
 
 {% block header %}
 {% ifequal from_datetime|date:"m/d/y" to_datetime|date:"m/d/y"  %}
@@ -11,8 +11,8 @@
 {% block content %}
     <table id="analytics">
         <colgroup span="1" class="titles">
-        <colgroup span="6">
-        <colgroup span="1" class="lists">
+        {# <colgroup span="6"> #}
+        {# <colgroup span="1" class="lists"> #}
         <thead>
             <tr>
                 <th><span>Name</span></th>{% for u in ordered_units %}
@@ -23,27 +23,16 @@
         {% for object in object_list %}
             <tr id="{{ object.project.slug }}" class="primary">
                 <th scope=row>{{ object.project.name }}</th>{% for o in object.observations %}
-                <td class='{{ o.metric.unit.slug }} {{ o.metric.observation_type.model }}'>{% ifequal o.metric.unit.observation_type.model "listobservation" %}
-                    <ol>{% for item in o.listobservation.value|slice:':5' %}
-                        <li>{{ item.name|urlizetrunc:25 }} <em>{{ item.value }}</em></li>{% endfor %}
-                    </ol>{% endifequal %}
-                    {% ifequal o.metric.unit.observation_type.model "ratioobservation" %}
-                        {% ifequal o.ratioobservation.antecedent.metric.unit.observation_unit "seconds" %}
-                    <p>{{ o.ratioobservation.value|secondstoduration }}</p>
-                        {% else %}
-                    <p>{{ o.ratioobservation.value|floatformat }}</p>{% endifequal %}
-                    {% else %}
-                        {% ifequal o.metric.unit.observation_unit "seconds" %}
-                    <p>{{ o.countobservation.value|secondstoduration }}</p>
-                        {% else %}
-                    <p>{{ o.countobservation.value|floatformat }}</p>{% endifequal %}
-                        {% endifequal %}
+                <td class='{{ o.metric.unit.slug }} {{ o.metric.observation_type.model }}'>
+                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
                 </td>{% endfor %}
-            </tr>
-            <tr class="secondary first">
-                <td></td>
-                <th colspan=2 scope=row>Number of Searches</th><td colspan=5>100</td>
-            </tr>
+            </tr>{% for o in object.extra_observations %}
+            <tr class="secondary {% if forloop.first %}first{% endif %}">
+                <th colspan=2 scope=row>{{ o.metric.unit.name }}</th>
+                <td class='{{ o.metric.unit.slug }} {{ o.metric.observation_type.model }}' colspan={{ object.observations|length|add:"-1" }}>
+                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
+                </td>
+            </tr>{% endfor %}
         {% endfor %}
         </tbody>
     </table>
