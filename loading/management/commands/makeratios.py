@@ -10,11 +10,6 @@ from lapidus.metrics.models import Project, Metric, Unit, CountObservation, Rati
 # import datetime
 import json
 
-import logging
-# Get an instance of a logger
-logger = logging.getLogger(__name__)
-
-
 # Unit.name, slug, category, period, observation_type, observation_unit (UNIT_TYPES)
 RATIO_DEFAULTS = {
     'category': 'web',
@@ -64,7 +59,7 @@ class Command(BaseCommand):
                                             slug=slugify(ratio["name"]), 
                                             period= period_id[period_name.index(pdkey)],
                                             category= category_id[category_name.index(ctkey)],
-                                            observation_unit='ratio'
+                                            observation_unit=ratio.get("type", "ratio")
                                             )
             self._make_missing_metrics(u)
             # generate ratioobservations for every project and antecedent/consequent that doesn't have one
@@ -73,25 +68,27 @@ class Command(BaseCommand):
                 try:
                     antecedent_metric = Metric.objects.get(project=project, unit__slug=ratio['antecedent'])
                 except Metric.DoesNotExist:
-                    msg = 'antecedent metric "{metric}" does not exist for {project}'.format(metric=ratio['antecedent'], project=project)
-                    logger.debug(msg)
+                    msg = 'antecedent metric "{metric}" does not exist for {project}\n'.format(metric=ratio['antecedent'], project=project)
                     self.stderr.write(msg)
-                    raise e
                 try:
                     consequent_metric = Metric.objects.get(project=project, unit__slug=ratio['consequent'])
                 except Metric.DoesNotExist:
-                    msg = 'consequent metric "{metric}" does not exist for {project}'.format(metric=ratio['consequent'], project=project)
-                    logger.debug(msg)
+                    msg = 'consequent metric "{metric}" does not exist for {project}\n'.format(metric=ratio['consequent'], project=project)
                     self.stderr.write(msg)
-                    raise e
                 ratio_metric = Metric.objects.get(project=project, unit=u) # We already searched for it then created it
                 antecedent_class = antecedent_metric.unit.observation_type.model_class()
                 consequent_class = consequent_metric.unit.observation_type.model_class()
                 
                 antecedent_observations = antecedent_class.objects.filter(metric=antecedent_metric).order_by('from_datetime', 'to_datetime')
                 consequent_observations = consequent_class.objects.filter(metric=consequent_metric).order_by('from_datetime', 'to_datetime')
-                # TODO must match antedecents to consequents more closely in case there are differences in the separate lists
+                # FIXME This doesn't calculate new ratioobservations for each time frame...
                 for a_obs in antecedent_observations:
+                    if verbosity >= 2:
+                        msg = '{project}\'s "{a_unit}" for {from_dt:%Y-%m-%d %H:%M:%S} - {to_dt:%Y-%m-%d %H:%M:%S} \n'.format(a_unit=a_obs.metric.unit.name, 
+                                                                                                            project=project, 
+                                                                                                            from_dt=a_obs.from_datetime, 
+                                                                                                            to_dt=a_obs.to_datetime)
+                        self.stderr.write(msg)
                     c_obs = consequent_observations.get(from_datetime=a_obs.from_datetime, to_datetime=a_obs.to_datetime)
                     (r, new_r) = RatioObservation.objects.get_or_create(
                         metric=ratio_metric,
@@ -100,8 +97,6 @@ class Command(BaseCommand):
                         from_datetime=a_obs.from_datetime, 
                         to_datetime=a_obs.to_datetime
                     )
-                logger.debug('got antecedent_metric, consequent_metric, and ratio_metric...\n')
-                if verbosity >= 2:
-                    msg = 'Ratio observation for {a_unit_name}/{c_unit_name}\n'.format(a_unit_name=a_obs.metric.unit.name, c_unit_name=c_obs.metric.unit.name)
-                    logger.debug(msg)
-                    self.stdout.write(msg)
+                    if verbosity >= 2:
+                        msg = 'Ratio observation for {a_unit_name}/{c_unit_name}\n'.format(a_unit_name=a_obs.metric.unit.name, c_unit_name=c_obs.metric.unit.name)
+                        self.stdout.write(msg)

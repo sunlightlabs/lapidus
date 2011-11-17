@@ -2,12 +2,20 @@
     {   
         "name"      : "Bounce Rate",
         "antecedent" : "bounces",
-        "consequent": "visits"
+        "consequent": "visits",
+        "type": "percentage"
     },                
     {                 
         "name"      : "Pageviews per Visit",
         "antecedent" : "pageviews",
-        "consequent": "visits"
+        "consequent": "visits",
+        "type": "ratio"
+    },
+    {                 
+        "name"      : "Average time on site per visit",
+        "antecedent" : "time-on-site",
+        "consequent": "visits",
+        "type": "ratio"
     }
     
 ]

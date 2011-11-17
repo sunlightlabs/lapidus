@@ -70,13 +70,13 @@ class Unit(models.Model):
     observation_unit = models.CharField(max_length=255, default='count', choices=UNIT_TYPES)
     
     class Meta:
-        ordering = ('-category', 'name')
+        ordering = ('name',)
     
     def __unicode__(self):
         return u"%s: %s" % (self.get_category_display(), self.name)
     
     def _set_observation_type_from_unit(self):
-        model = unit_model[unit_name.index(self.observation_unit)]
+        model = UNIT_MAP[self.observation_unit]
         self.observation_type = ContentType.objects.get(app_label='metrics', model=model)
     
     def save(self, *args, **kwargs):
@@ -155,8 +155,9 @@ class RatioObservation(Observation):
     antecedent = models.ForeignKey(CountObservation, related_name="antecedents")
     consequent = models.ForeignKey(CountObservation, related_name="consequents")
     
-    def value(self):
+    def _get_value(self):
         return float(self.antecedent.value)/float(self.consequent.value)
+    value = property(_get_value)
     
     def save(self, *args, **kwargs):
         self.from_datetime = self.antecedent.from_datetime
