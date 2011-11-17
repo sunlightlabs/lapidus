@@ -94,19 +94,23 @@ body {
     margin: 20px auto;
 }
 
+header {
+    border-bottom: 1px solid #f8f8f0;
+}
+
 h1 {
     font-size: 200%;
 }
 
-table#analytics {
+table{
     width: 100%;
+    margin-top: 25px;
 }
 
-#analytics thead th {
-    height: 50px;
+thead th {
     vertical-align: middle;
 }
-#analytics tbody th, #analytics th.header {
+tbody th, th.header {
     cursor: pointer;
 }
 
@@ -114,16 +118,15 @@ table#analytics {
     background-color: #EDF4C4;
 }
 
-#analytics thead th {
+thead th {
     border-bottom: 1px solid #E1DFDA;
 }
 
-#analytics tbody tr {
+tbody tr {
     background-color: #F8F7F2;
     border-top: 1px solid #E1DFDA;
 }
-
-.odd {
+tbody tr.odd {
     background-color: #FDFCF7;
 }
 
@@ -135,7 +138,7 @@ tr.primary {
     border-bottom: 1px solid #F2F1EC;
 }
 
-.secondary {
+tbody tr.secondary {
     border: none;
 }
 
@@ -148,20 +151,36 @@ tr.primary {
     vertical-align: top;
 }
 
-
-#analytics td, #analytics th {
-    padding: 10px;
-    max-width: 120px;
+td, th {
+    padding: 8px 12px;
     vertical-align: middle;
 }
 
-#analytics td > p {
+.secondary td, .secondary th {
+    padding: 3px 12px;
+}
+
+.secondary.first td, .secondary.first th {
+    padding-top: 12px;
+}
+
+.secondary.last td, .secondary.last th {
+    padding-bottom: 12px;
+}
+
+td > p {
     color: #6F6A67;
-    font-size: 200%;
+    font-size: 184.5%;
+    font-weight: bold;
     text-align: right;
 }
 
-#analytics td > div {
+.secondary td > p {
+    font-size: 100%;
+    text-align: left;
+}
+
+td > div {
     vertical-align: middle;
 }
 
@@ -169,14 +188,14 @@ li {
     margin-bottom: 4px;
 }
 
-#analytics th > span {
+th > span {
     display: block;
     max-width: 120px;
     padding-left: 18px;
     text-align: left;
 }
 
-#analytics tr.primary > th {
+tr.primary > th {
     font-size: 112%;
     font-weight: bold;
     text-align: left;
@@ -192,18 +211,19 @@ li {
     user-select: none;
 }
 
-#analytics tr.primary.expanded > th {
+tr.primary.expanded > th {
     background-image: url('/static/img/arrow2_s_blue.png');
     background-position: left center;
     background-repeat: no-repeat;
 }
 
-#analytics tr.primary > th, #analytics tr.secondary > td:first-child {
+tr.primary > th, tr.secondary > td:first-child {
     border-right: 1px dashed #DCDBD6;
 }
 
-#analytics td.top-traffic-referrers {
+td.top-traffic-referrers {
     max-width: none;
+    min-width: 200px;
 }
 
 .lists {
@@ -273,6 +293,10 @@ p.metric {
     color: #274868;
     height: auto;
     width: auto;
+}
+
+.average-time-on-site-per-visit {
+    margin-left: 12px;
 }
 
 .balance {

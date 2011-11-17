@@ -2,15 +2,15 @@
 
 {% block header %}
 {% ifequal from_datetime|date:"m/d/y" to_datetime|date:"m/d/y"  %}
-<h2>Data for {{ from_datetime|date:"m/d/y" }} [{{ from_datetime|timesince }} ago]</h2>
+<h2>Data for {{ from_datetime|date:"m/d/Y" }} [{{ from_datetime|timesince }} ago]</h2>
 {% else %}
-<h2>From&nbsp;{{ from_datetime|date:"m/d/y" }} To&nbsp;{{ to_datetime|date:"m/d/y" }}</h2>
+<h2>From&nbsp;{{ from_datetime|date:"m/d/Y" }} To&nbsp;{{ to_datetime|date:"m/d/Y" }}</h2>
 {% endifequal %}
 {% endblock header %}
 
 {% block content %}
     <table id="analytics">
-        <colgroup span="1" class="titles">
+        {# <colgroup span="1" class="titles"> #}
         {# <colgroup span="6"> #}
         {# <colgroup span="1" class="lists"> #}
         <thead>
@@ -27,7 +27,7 @@
                     {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
                 </td>{% endfor %}
             </tr>{% for o in object.extra_observations %}
-            <tr class="secondary {% if forloop.first %}first{% endif %}">
+            <tr class="secondary {% if forloop.first %}first{% endif %}{% if forloop.last %}last{% endif %}">
                 <th colspan=2 scope=row>{{ o.metric.unit.name }}</th>
                 <td class='{{ o.metric.unit.slug }} {{ o.metric.observation_type.model }}' colspan={{ object.observations|length|add:"-1" }}>
                     {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
