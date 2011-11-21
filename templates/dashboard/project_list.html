@@ -1,18 +1,21 @@
 {% extends "base.html" %}{% load dashboard_filters humanize %}
 
+{% block extrahead %}
+<link rel="stylesheet" href="{{ STATIC_URL }}css/jquery-ui-1.8.16.custom.css">
+{% endblock %}
+
 {% block header %}
-{% ifequal from_datetime|date:"m/d/y" to_datetime|date:"m/d/y"  %}
-<h2>Data for {{ from_datetime|date:"m/d/Y" }} [{{ from_datetime|timesince }} ago]</h2>
-{% else %}
-<h2>From&nbsp;{{ from_datetime|date:"m/d/Y" }} To&nbsp;{{ to_datetime|date:"m/d/Y" }}</h2>
-{% endifequal %}
+<form id="pickdaterange" action="{% url get-observations %}" method="get" accept-charset="utf-8">
+    <ul class="clearfix">
+        {{ form.as_ul }}
+        <li><input type="submit" value="Update"></li>
+    </ul>
+</form>
+
 {% endblock header %}
 
 {% block content %}
     <table id="analytics">
-        {# <colgroup span="1" class="titles"> #}
-        {# <colgroup span="6"> #}
-        {# <colgroup span="1" class="lists"> #}
         <thead>
             <tr>
                 <th><span>Name</span></th>{% for u in ordered_units %}
@@ -39,5 +42,9 @@
 {% endblock %}
 
 {% block js %}
+    <script src="{{ STATIC_URL }}js/libs/jquery-ui-1.8.16.custom.min.js"></script>
+    <script>
+        var MAX_DATE = '{{ latest_datetime|date:"Y-m-d" }}';
+    </script>
     <script src="{{ STATIC_URL }}js/script.js"></script>
 {% endblock %}
