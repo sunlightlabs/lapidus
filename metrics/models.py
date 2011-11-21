@@ -3,6 +3,7 @@ from lapidus.metrics import daterange
 # from lapidus.metrics.validation import LIST_SCHEMA
 import json
 import uuid
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 # import validictory
 
 from django.contrib.contenttypes.models import ContentType
@@ -156,7 +157,10 @@ class RatioObservation(Observation):
     consequent = models.ForeignKey(CountObservation, related_name="consequents")
     
     def _get_value(self):
-        return float(self.antecedent.value)/float(self.consequent.value)
+        if isinstance(self.antecedent.value, int) and isinstance(self.consequent.value, int):
+            return Decimal(self.antecedent.value)/Decimal(self.consequent.value)
+        else:
+            return None
     value = property(_get_value)
     
     def save(self, *args, **kwargs):
