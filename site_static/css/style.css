@@ -102,15 +102,15 @@ h1 {
     font-size: 200%;
 }
 
-table{
+#analytics table{
     width: 100%;
     margin-top: 25px;
 }
 
-thead th {
+#analytics thead th {
     vertical-align: middle;
 }
-tbody th, th.header {
+#analytics tbody th, #analytics th.header {
     cursor: pointer;
 }
 
@@ -118,19 +118,19 @@ tbody th, th.header {
     background-color: #EDF4C4;
 }
 
-thead th {
+#analytics thead th {
     border-bottom: 1px solid #E1DFDA;
 }
 
-tbody tr {
+#analytics tbody tr {
     background-color: #F8F7F2;
     border-top: 1px solid #E1DFDA;
 }
-tbody tr.odd {
+#analytics tbody tr.odd {
     background-color: #FDFCF7;
 }
 
-tr.primary {
+#analytics tr.primary {
     height: 120px;
 }
 
@@ -138,7 +138,7 @@ tr.primary {
     border-bottom: 1px solid #F2F1EC;
 }
 
-tbody tr.secondary {
+#analytics tbody tr.secondary {
     border: none;
 }
 
@@ -151,7 +151,7 @@ tbody tr.secondary {
     vertical-align: top;
 }
 
-td, th {
+#analytics td, #analytics th {
     padding: 8px 12px;
     vertical-align: middle;
 }
@@ -168,11 +168,16 @@ td, th {
     padding-bottom: 12px;
 }
 
-td > p {
+.primary td > p {
     color: #6F6A67;
     font-size: 184.5%;
     font-weight: bold;
     text-align: right;
+}
+
+.primary td > p.nodata {
+    font-size: 100%;
+    color: #9C938F;
 }
 
 .secondary td > p {
@@ -180,7 +185,7 @@ td > p {
     text-align: left;
 }
 
-td > div {
+#analytics td > div {
     vertical-align: middle;
 }
 
@@ -188,14 +193,14 @@ li {
     margin-bottom: 4px;
 }
 
-th > span {
+#analytics th > span {
     display: block;
     max-width: 120px;
     padding-left: 18px;
     text-align: left;
 }
 
-tr.primary > th {
+#analytics tr.primary > th {
     font-size: 112%;
     font-weight: bold;
     text-align: left;
@@ -301,6 +306,16 @@ p.metric {
 
 .balance {
     white-space: nowrap;
+}
+
+#pickdaterange li {
+    display: block;
+    float: left;
+    margin: 5px 10px 5px 0;
+}
+
+#pickdaterange ul {
+    margin-left: 0;
 }
 
 /*
