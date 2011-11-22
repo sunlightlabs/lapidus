@@ -151,6 +151,10 @@ h1 {
     vertical-align: top;
 }
 
+.secondary th.annotations {
+    text-align: left;
+}
+
 #analytics td, #analytics th {
     padding: 8px 12px;
     vertical-align: middle;
@@ -206,9 +210,10 @@ li {
     text-align: left;
     color: #274868;
     width: 100px;
-    padding-left: 30px;
-    background-image: url('/static/img/arrow2_e_blue.png');
-    background-position: left center;
+    padding-left: 24px;
+    padding-right: 4px;
+    background-image: url('/static/img/blue_arrow_right.png');
+    background-position: 4px 50%;
     background-repeat: no-repeat;
     -moz-user-select: -moz-none;
     -khtml-user-select: none;
@@ -216,13 +221,11 @@ li {
     user-select: none;
 }
 
-tr.primary.expanded > th {
-    background-image: url('/static/img/arrow2_s_blue.png');
-    background-position: left center;
-    background-repeat: no-repeat;
+#analytics tr.primary.expanded > th {
+    background-image: url('/static/img/blue_arrow_down.png');
 }
 
-tr.primary > th, tr.secondary > td:first-child {
+tr.primary > th {
     border-right: 1px dashed #DCDBD6;
 }
 
@@ -236,26 +239,26 @@ td.top-traffic-referrers {
 }
 
 .header > span {
-    background-image: url('/static/img/arrow2_ns.png');
+    background-image: url('/static/img/arrow_greyNeutral.png');
     background-position: left center;
     background-repeat: no-repeat;
 }
 
 .headerSortDown > span {
-    background-image: url('/static/img/arrow2_n.png');
+    background-image: url('/static/img/arrow_greyUp.png');
     background-position: left center;
     background-repeat: no-repeat;
 }
 
 .headerSortUp > span {
-    background-image: url('/static/img/arrow2_s.png');
+    background-image: url('/static/img/arrow_greyDown.png');
     background-position: left center;
     background-repeat: no-repeat;
 }
 
 .good {
     color: #9CC71B;
-    background-image: url('/static/img/arrow1_n.png');
+    background-image: url('/static/img/arrow_greyUp.png');
     background-position: left center;
     background-repeat: no-repeat;
     padding-left: 16px;
@@ -263,7 +266,7 @@ td.top-traffic-referrers {
 
 .bad {
     color: #F74D0F;
-    background-image: url('/static/img/arrow1_s.png');
+    background-image: url('/static/img/arrow_greyDown.png');
     background-position: left center;
     background-repeat: no-repeat;
     padding-left: 16px;

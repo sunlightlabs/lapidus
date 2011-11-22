@@ -73,7 +73,8 @@ def observations_for_day(request, year=None, month=None, day=None):
         obj = {
             'project': project,
             'observations': [],
-            'extra_observations': []
+            'extra_observations': [],
+            'annotations': []
         }
         project_observations = observations.filter(metric__project=project)
         for ordered_unit in ordered_units:
@@ -91,7 +92,7 @@ def observations_for_day(request, year=None, month=None, day=None):
             except Exception, e:
                 logger.debug("No observation for {unit}".format(unit=extra_unit))
                 obj['extra_observations'].append(None)
-            
+        obj['annotations'] = Annotation.objects.filter(project=project).order_by('-timestamp')
         object_list.append(obj)
     
     form = _get_dateform(from_datetime, to_datetime)

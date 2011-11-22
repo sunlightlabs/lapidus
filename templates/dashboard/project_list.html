@@ -14,7 +14,7 @@
 
 {% endblock header %}
 
-{% block content %}
+{% block content %}{% with numcols=ordered_units.count|add:"1" %}
     <table id="analytics">
         <thead>
             <tr>
@@ -25,20 +25,32 @@
         <tbody>
         {% for object in object_list %}
             <tr id="{{ object.project.slug }}" class="primary">
-                <th scope=row>{{ object.project.name }}</th>{% for o in object.observations %}
+                <th scope=row>
+                    {{ object.project.name }}
+                </th>{% for o in object.observations %}
                 <td class='{{ o.metric.unit.slug }} {{ o.metric.observation_type.model }}'>
                     {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
                 </td>{% endfor %}
             </tr>{% for o in object.extra_observations %}
-            <tr class="secondary {% if forloop.first %}first{% endif %}{% if forloop.last %}last{% endif %}">
+            <tr class="secondary {% if forloop.first %}first{% endif %}">
                 <th colspan=2 scope=row>{{ o.metric.unit.name }}</th>
-                <td class='{{ o.metric.unit.slug }} {{ o.metric.observation_type.model }}' colspan={{ object.observations|length|add:"-1" }}>
+                <td class='{{ o.metric.unit.slug }} {{ o.metric.observation_type.model }}' colspan={{ numcols|add:"-1" }}>
                     {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
                 </td>
-            </tr>{% endfor %}
+            </tr>{% endfor %}{% if object.annotations %}
+            <tr class="secondary">
+                <th colspan=2>Notes</th>
+                <td colspan={{ numcols|add:"-1" }}></td>
+            </tr>{% for a in object.annotations %}
+            <tr class="secondary {% if forloop.last %}last{% endif %}">
+                <td>
+                <td colspan={{ numcols }}>
+                    <time datetime="{{ a.timestamp|date:"c" }}">{{ a.timestamp|date:"Y-m-d" }}</time>:&nbsp;<span>{{ a.text }}</span>
+                </td>{% endfor %}
+            </tr>{% endif %}
         {% endfor %}
         </tbody>
-    </table>
+    </table>{% endwith %}
 {% endblock %}
 
 {% block js %}
