@@ -146,7 +146,19 @@ class CountObservation(Observation):
 
 class ListObservation(Observation):
     """Stores a metric observation whose value is a list/tuple stored as JSON"""
-    value = JSONField()
+    jsonvalue = JSONField()
+    
+    def _generate_list(self, data, limit=None):
+        sorteddata = sorted(data, lambda x,y: cmp(x.metrics[0].value,y.metrics[0].value), None, True)
+        return [ { 'rank': n, 'name': d.dimensions[0].value, 'value': d.metrics[0].value } for n,d in enumerate(sorteddata) ][:limit]
+    
+    def _set_value(self, value):
+        self.jsonvalue = self._generate_list(value)
+    
+    def _get_value(self):
+        return self.jsonvalue
+    
+    value = property(_get_value, _set_value)
     
     def __unicode__(self):
         return u"<{metric}>".format(metric=self.metric)

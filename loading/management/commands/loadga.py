@@ -8,6 +8,8 @@ from googleanalytics import Connection
 from lapidus.metrics.models import Project, Metric, Unit, CountObservation, ListObservation, UNIT_TYPES
 import datetime
 import json
+from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
+
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -24,10 +26,6 @@ class Command(BaseCommand):
             obj.save()
         except IntegrityError, e:
             raise CommandError("[%s]:\n\t%s" % (obj, ','.join(e.messages)))
-    
-    def _generate_list(self, data, limit=None):
-        sorteddata = sorted(data, lambda x,y: cmp(x.metrics[0].value,y.metrics[0].value), None, True)
-        return [ { 'rank': n, 'name': d.dimensions[0].value, 'value': d.metrics[0].value } for n,d in enumerate(sorteddata) ][:limit]
     
     def handle(self, *args, **options):
         verbosity = int(options.get('verbosity'))
@@ -120,9 +118,9 @@ class Command(BaseCommand):
                                         to_datetime=end,
                                     )
                                 if observation_class is ListObservation:
-                                    o.value = self._generate_list(data)
+                                    o.value = data
                                 else:
-                                    o.value = float(data[0].metrics[0].value) # certain data comes back as a float (time on site), so easier to handle as such and let mode convert
+                                    o.value = Decimal(data[0].metrics[0].value) # certain data comes back as a float (time on site), so easier to handle as such and let mode convert
                                 if verbosity >= 2:
                                     self.stdout.write('Observation for metric "{0}" at "{1}" with value:\n{2}\n'.format(u.name, start, o.value))
                                 self._save_object(o)
