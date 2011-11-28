@@ -7,7 +7,7 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-  <title>{% block title %}Sunlight Foundation Analytics Dashboard{% endblock %}</title>
+  <title>{% block title %}Sunlight Foundation Analytics{% endblock %}</title>
 
   <link rel="stylesheet" href="{{ STATIC_URL }}css/style.css?v=2">
   <script src="{{ STATIC_URL }}js/libs/modernizr-1.7.min.js"></script>
@@ -15,16 +15,38 @@
 </head>
 
 <body>
-
-  <div id="container">
-    <header>
-        <h1>Sunlight Foundation Analytics Dashboard</h1>{% block header %}{% endblock header %}
-    </header>
-    <div id="main" role="main">{% block content %}{% endblock %}
+    <div class="sf_mini_header" role="banner">
+      <div class="sf_mini_header_nav_wrapper">
+        <a href="http://www.sunlightfoundation.com" title="Visit the Sunlight Foundation"><h1>
+          Sunlight Foundation
+          </h1>
+        </a>
+        <ul>
+          <li class="about">
+            <a href="http://sunlightfoundation.com/about/" title="About the Sunlight Foundation">About</a>
+          </li>
+          <li class="blog">
+            <a href="http://sunlightfoundation.com/blog/" title="Visit Sunlight's Blog">Blog</a>
+          </li>
+          <li class="projects">
+            <a href="http://sunlightfoundation.com/projects/" title="Sunlight's Projects">Projects</a>
+          </li>
+          <li class="contact">
+            <a href="http://sunlightfoundation.com/contact/" title="Contact the Sunlight Foundation">Contact</a>
+          </li>
+        </ul>
+      </div>
     </div>
-    <footer></footer>
-  </div> <!-- eo #container -->
-
+    <div id="wrapper">
+        <div id="container">
+            <header>
+                <h1>Sunlight Foundation Analytics</h1>{% block header %}{% endblock header %}
+            </header>
+            <div id="main" role="main">{% block content %}{% endblock %}
+            </div>
+            <footer></footer>
+        </div> <!-- eo #container -->
+    </div>
 
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.js"></script>
   <script>window.jQuery || document.write("<script src='{{ STATIC_URL }}js/libs/jquery-1.6.2.min.js'>\x3C/script>")</script>
