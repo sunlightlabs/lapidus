@@ -159,6 +159,8 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
 
 def observations_for_daterange(request, from_year, from_month, from_day, to_year, to_month, to_day):
     ordered_units = UnitCollection.objects.select_related().get(name='Default').ordered_units()
+    latest_observation = Observation.objects.filter(metric__unit__in=ordered_units).latest('to_datetime')
+    latest_datetime = latest_observation.to_datetime
     
     extra_units = Unit.objects.all().exclude(id__in=[o.unit_id for o in ordered_units])
 
@@ -187,5 +189,6 @@ def observations_for_daterange(request, from_year, from_month, from_day, to_year
                                                                         'ordered_units': ordered_units,
                                                                         'from_datetime': from_datetime,
                                                                         'to_datetime': to_datetime,
-                                                                        'form': form
+                                                                        'form': form,
+                                                                        'latest_datetime': latest_datetime
                                                                       })

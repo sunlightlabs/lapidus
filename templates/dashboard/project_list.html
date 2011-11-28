@@ -7,7 +7,14 @@
 {% block header %}
 <form id="pickdaterange" action="{% url get-observations %}" method="get" accept-charset="utf-8">
     <ul class="clearfix">
-        {{ form.as_ul }}
+        <li>
+            <label for="from_datetime">From</label>
+            {{ form.from_datetime }}
+        </li>
+        <li>
+            <label for="to_datetime">To</label>
+            {{ form.to_datetime }}
+        </li>
         <li><input type="submit" value="Update"></li>
     </ul>
 </form>
