@@ -1,10 +1,10 @@
 from django.db import models
 from lapidus.metrics import daterange
-# from lapidus.metrics.validation import LIST_SCHEMA
+from lapidus.metrics.validation import LIST_SCHEMA
 import json
 import uuid
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
-# import validictory
+import validictory
 
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
@@ -111,23 +111,30 @@ class Metric(models.Model):
     project = models.ForeignKey(Project, related_name="metrics")
     unit = models.ForeignKey(Unit, related_name="metrics")
     is_cumulative = models.BooleanField(default=False)
+    _observations = None
     
     class Meta:
         ordering = ('project','unit')
     
-    def __unicode__(self):
-        return u"%s %s" % (self.project.name, self.unit.name)
+    @property
+    def related_observations(self):
+        obs_class = self.unit.observation_type.model_class()
+        if not self._observations:
+           self._observations = obs_class.objects.select_related().filter(metric=self)
+        return self._observations
     
-    def date_range(self, start, end):
-        
-        if self.unit.period != 2:
-            raise ValueError('cannot iterate over dates for a non-daily metric')
-            
-        obs = self.observations.filter(from_datetime__gte=start, from_datetime__lte=end)
-        obs = dict((ob.from_datetime.date().isoformat(), ob) for ob in obs)
-        
-        return [(d, obs.get(d.date().isoformat(), None)) for d in daterange(start, end)]
-        
+    def __unicode__(self):
+        return u"%s: %s" % (self.project.name, self.unit.name)
+    
+    # def date_range(self, start, end):
+    #     
+    #     if self.unit.period != 2:
+    #         raise ValueError('cannot iterate over dates for a non-daily metric')
+    #         
+    #     obs = self.observations.filter(from_datetime__gte=start, from_datetime__lte=end)
+    #     obs = dict((ob.from_datetime.date().isoformat(), ob) for ob in obs)
+    #     
+    #     return [(d, obs.get(d.date().isoformat(), None)) for d in daterange(start, end)]
 
 class Observation(models.Model):
     metric = models.ForeignKey(Metric, related_name="observations")
@@ -148,12 +155,13 @@ class ListObservation(Observation):
     """Stores a metric observation whose value is a list/tuple stored as JSON"""
     jsonvalue = JSONField()
     
-    def _generate_list(self, data, limit=None):
-        sorteddata = sorted(data, lambda x,y: cmp(x.metrics[0].value,y.metrics[0].value), None, True)
-        return [ { 'rank': n, 'name': d.dimensions[0].value, 'value': d.metrics[0].value } for n,d in enumerate(sorteddata) ][:limit]
-    
     def _set_value(self, value):
-        self.jsonvalue = self._generate_list(value)
+        try:
+            validictory.validate(value, LIST_SCHEMA)
+            value = sorted(value, key=lambda x: x['rank'])
+            self.jsonvalue = value
+        except ValueError, e:
+            raise e
     
     def _get_value(self):
         return self.jsonvalue
@@ -167,12 +175,15 @@ class RatioObservation(Observation):
     """Relates two CountObservation objects to create a ratio (which can represent a percentage, etc)"""
     antecedent = models.ForeignKey(CountObservation, related_name="antecedents")
     consequent = models.ForeignKey(CountObservation, related_name="consequents")
+    _value = False
     
     def _get_value(self):
-        if isinstance(self.antecedent.value, int) and isinstance(self.consequent.value, int):
-            return Decimal(self.antecedent.value)/Decimal(self.consequent.value)
-        else:
-            return None
+        if isinstance(self._value, bool):
+            if isinstance(self.antecedent.value, int) and isinstance(self.consequent.value, int):
+                self._value = Decimal(self.antecedent.value)/Decimal(self.consequent.value)
+            else:
+                self._value = None
+        return self._value
     value = property(_get_value)
     
     def save(self, *args, **kwargs):

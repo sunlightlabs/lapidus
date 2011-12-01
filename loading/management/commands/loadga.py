@@ -17,6 +17,10 @@ class Command(BaseCommand):
     help = 'Load stats from Google Analytics. Defaults to latest available (yesterday), but can be given a particular date or a date range'
     args = '[from_date] [to_date]'
     
+    def _generate_sorted_list(self, data, limit=None):
+        sorteddata = sorted(data, lambda x,y: cmp(x.metrics[0].value,y.metrics[0].value), None, True)
+        return [ { 'rank': n, 'name': d.dimensions[0].value, 'value': d.metrics[0].value } for n,d in enumerate(sorteddata) ][:limit]
+    
     def _save_object(self, obj):
         try:
             obj.full_clean()
@@ -118,7 +122,7 @@ class Command(BaseCommand):
                                         to_datetime=end,
                                     )
                                 if observation_class is ListObservation:
-                                    o.value = data
+                                    o.value = self._generate_sorted_list(data)
                                 else:
                                     o.value = Decimal(data[0].metrics[0].value) # certain data comes back as a float (time on site), so easier to handle as such and let mode convert
                                 if verbosity >= 2:
