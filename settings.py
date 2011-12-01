@@ -69,7 +69,7 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    # 'tastypie',
+    'tastypie',
     'django_extensions',
     'lapidus.metrics',
     'lapidus.dashboard',
