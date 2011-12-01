@@ -33,7 +33,7 @@
     });
 
     $('.secondary').hide();
-    $('#analytics').delegate('tbody tr th:first-child', 'click', function() {
+    $('#analytics').delegate('tbody tr.primary th', 'click', function() {
         $(this).closest('tr').toggleClass('expanded').nextUntil('tr:not(.secondary)').toggle();
         return false;
     });

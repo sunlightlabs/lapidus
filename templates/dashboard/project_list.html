@@ -18,7 +18,6 @@
         <li><input type="submit" value="Update"></li>
     </ul>
 </form>
-
 {% endblock header %}
 
 {% block content %}{% with numcols=ordered_units.count|add:"1" %}
@@ -53,8 +52,8 @@
                 <td>
                 <td colspan={{ numcols }}>
                     <time datetime="{{ a.timestamp|date:"c" }}">{{ a.timestamp|date:"Y-m-d" }}</time>:&nbsp;<span>{{ a.text }}</span>
-                </td>{% endfor %}
-            </tr>{% endif %}
+                </td>
+            </tr>{% endfor %}{% endif %}
         {% endfor %}
         </tbody>
     </table>{% endwith %}

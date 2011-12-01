@@ -97,22 +97,29 @@ body {
 #container {
     width: 960px;
     margin: 0px auto 20px;
-    padding-top: 30px;
+    padding-top: 45px;
 }
 
 header {
     border-bottom: 1px solid #DDDDD3;
     padding: 0 0 10px;
+    position: relative;
 }
 
 #main {
     border-top: 1px solid #FDFCF6;
-    padding-top: 20px;
+    padding-top: 28px;
 }
 
 h1 {
     font-size: 200%;
     text-align: left;
+    margin-bottom: 30px;
+}
+
+label {
+    font-weight: bold;
+    margin-right: 4px;
 }
 
 input {
@@ -120,10 +127,17 @@ input {
     background-color: #FDFCF7;
     border: 1px solid #E1DFD9;
     padding: 10px 8px 8px;
+    -webkit-background-clip: padding-box; /* fix WebKit background bleed on border-radius */
+    -webkit-border-radius: 4px;
+       -moz-border-radius: 4px;
+            border-radius: 4px;
+    
 }
 
 input.datefield {
+    font-size: 102%;
     width: 75px;
+    margin-right: 15px;
 }
 
 .sf_mini_header {
@@ -202,7 +216,7 @@ input.datefield {
     margin-top: 10px;
 }
 
-#pickdaterange li {
+header li {
     display: block;
     float: left;
     margin: 5px 10px 5px 0;
@@ -232,23 +246,27 @@ input.datefield {
     border-bottom: 1px solid #E1DFDA;
 }
 
-#analytics tbody tr {
-    background-color: #F8F7F2;
+#analytics tbody td, #analytics tbody th {
     border-top: 1px solid #E1DFDA;
 }
+
+#analytics tbody tr {
+    background: #F8F7F2;
+}
+
 #analytics tbody tr.odd {
-    background-color: #FDFCF7;
+    background-color: #FCFBF9;
 }
 
 #analytics tr.primary {
     height: 120px;
 }
 
-.expanded {
-    border-bottom: 1px solid #F2F1EC;
+#analytics tbody tr.secondary.first td, #analytics tbody tr.secondary.first th {
+    border-top: 1px solid #EFEEE9;
 }
 
-#analytics tbody tr.secondary {
+#analytics tbody tr.secondary td, #analytics tbody tr.secondary th {
     border: none;
 }
 
