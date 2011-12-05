@@ -1,16 +1,11 @@
 from django.contrib import admin
+from django.contrib.admin.util import unquote
+from django.contrib.contenttypes import generic
+from django.utils.functional import curry
 from django.forms import ModelForm
-from models import UnitCollection, OrderedMembership
+from dashboard.models import *
 
-
-class OrderedMembershipInline(admin.TabularInline):
-    model = OrderedMembership
-    extra = 1
-    ordering = ['order']
-
-class UnitCollectionFormModelForm(ModelForm):
-    """(UnitCollectionForm description)"""
-    
+class OrderedListModelForm(ModelForm):
     class Media:
         js = (
             "dashboard/js/jquery-1.6.2.min.js",
@@ -19,24 +14,49 @@ class UnitCollectionFormModelForm(ModelForm):
         )
 
     def __unicode__(self):
-        return u"UnitCollectionForm"
+        return u"OrderedListModelForm"
 
+class OrderedListMembershipInline(admin.TabularInline):
+    extra = 1
+    ordering = ['order']
+    classes = ('orderedinline',)
 
-class UnitCollectionAdmin(admin.ModelAdmin):
-    list_display = ('name', 'list_of_units',)
-    form = UnitCollectionFormModelForm
+class OrderedListAdmin(admin.ModelAdmin):
+    list_display = ('name', 'default')
+    form = OrderedListModelForm
     prepopulated_fields = {'slug': ('name',)}
+
+
+# UnitList Admin
+class UnitListMembershipInline(OrderedListMembershipInline):
+    model = UnitListMembership
+
+class UnitListAdmin(OrderedListAdmin):
     inlines = [
-        OrderedMembershipInline,
+        UnitListMembershipInline,
     ]
 
-admin.site.register(UnitCollection, UnitCollectionAdmin)
+admin.site.register(UnitList, UnitListAdmin)
+
+# ProjectList Admin
+class ProjectListMembershipInline(OrderedListMembershipInline):
+    model = ProjectListMembership
+
+class ProjectListAdmin(OrderedListAdmin):
+    inlines = [
+        ProjectListMembershipInline,
+    ]
+
+admin.site.register(ProjectList, ProjectListAdmin)
 
 
-# class OrderedMembershipAdmin(admin.ModelAdmin):
-#     list_display = ('collection', 'unit', 'order')
-#     # list_filter = ('',)
-#     # search_fields = ('',)
-# 
-# 
-# admin.site.register(OrderedMembership, OrderedMembershipAdmin)
+# MetricList Admin
+class MetricListMembershipInline(OrderedListMembershipInline):
+    model = MetricListMembership
+
+class MetricListAdmin(OrderedListAdmin):
+    inlines = [
+        MetricListMembershipInline,
+    ]
+
+admin.site.register(MetricList, MetricListAdmin)

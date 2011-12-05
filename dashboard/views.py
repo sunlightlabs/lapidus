@@ -1,5 +1,5 @@
 from metrics.models import *
-from dashboard.models import UnitCollection, Unit, DateRangeForm
+from dashboard.models import *
 from django.views.generic import ListView
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404
@@ -47,9 +47,9 @@ def get_observations(request):
 def observations_for_day(request, year=None, month=None, day=None):
     """View for displaying a set of metric observations across all projects"""
     
-    ordered_units = UnitCollection.objects.select_related().get(name='Default').ordered_units()
+    ordered_units = UnitList.objects.get(default=True).ordered()
     
-    extra_units = Unit.objects.all().exclude(id__in=[o.unit_id for o in ordered_units])
+    extra_units = Unit.objects.select_related().filter(category=1).exclude(id__in=[o.id for o in ordered_units])
     
     logger.debug('Requested for {month} {day} {year}'.format(month=month, day=day, year=year))
     
@@ -64,33 +64,39 @@ def observations_for_day(request, year=None, month=None, day=None):
     from_datetime = datetime.datetime(int(year), int(month), int(day), 0, 0, 0)
     to_datetime = datetime.datetime(int(year), int(month), int(day), 23, 59, 59)
         
-    observations = Observation.objects.select_related().filter(Q(metric__is_cumulative=True) | Q(Q(from_datetime=from_datetime), Q(to_datetime=to_datetime)))
-    
     object_list = []
     
-    projects = Project.objects.select_related().all()
+    projects = ProjectList.objects.get(default=True).items.all()
     for project in projects:
+        project_metrics = Metric.objects.filter(project=project)
         obj = {
             'project': project,
             'observations': [],
             'extra_observations': [],
             'annotations': []
         }
-        project_observations = observations.filter(metric__project=project)
         for ordered_unit in ordered_units:
-            logger.debug('unit in unitcol is {unit}'.format(unit=ordered_unit.unit.slug))
+            logger.debug('unit in unitcol is {unit}'.format(unit=ordered_unit.slug))
             try:
-                proj_obs = project_observations.filter(metric__unit=ordered_unit.unit).latest('to_datetime')
-                obj['observations'].append(proj_obs)
+                metric = project_metrics.get(unit=ordered_unit)
+                try:
+                    proj_obs = metric.related_observations.latest('to_datetime')
+                    obj['observations'].append(proj_obs)
+                except Exception, e:
+                    logger.debug("No observation for {unit}".format(unit=ordered_unit))
+                    obj['observations'].append(None)
             except Exception, e:
-                logger.debug("No observation for {unit}".format(unit=ordered_unit.unit))
                 obj['observations'].append(None)
         for extra_unit in extra_units:
             try:
-                proj_obs = project_observations.filter(metric__unit=extra_unit).latest('to_datetime')
-                obj['extra_observations'].append(proj_obs)
+                metric = project_metrics.get(unit=extra_unit)
+                try:
+                    proj_obs = metric.related_observations.latest('to_datetime')
+                    obj['extra_observations'].append(proj_obs)
+                except Exception, e:
+                    logger.debug("No observation for {unit}".format(unit=extra_unit))
+                    obj['extra_observations'].append(None)
             except Exception, e:
-                logger.debug("No observation for {unit}".format(unit=extra_unit))
                 obj['extra_observations'].append(None)
         obj['annotations'] = Annotation.objects.filter(project=project).order_by('-timestamp')
         object_list.append(obj)
@@ -106,13 +112,15 @@ def observations_for_day(request, year=None, month=None, day=None):
 
 
 def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
-    """docstring for _aggregate_observation_by_class"""
-    obs_class = unit.observation_type.model_class()
     logger.debug('unit in unitcol is {unit}'.format(unit=unit.slug))
-    metric = Metric.objects.get(project=project, unit=unit)
+    try:
+        metric = Metric.objects.get(project=project, unit=unit)
+    except Exception, e:
+        return None
+    
     if metric.is_cumulative:
         try:
-            latest_obs = obs_class.objects.filter(metric=metric, to_datetime__lte=to_datetime).latest('to_datetime')
+            latest_obs = metric.related_observations.filter(to_datetime__lte=to_datetime).latest('to_datetime')
             obs_dict = {
                 'metric': metric,
                 unit.observation_type.model : latest_obs
@@ -121,10 +129,11 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
         except Exception, e:
             return None
     else:
-        obs_qs = obs_class.objects.filter(metric=metric, from_datetime__gte=from_datetime, to_datetime__lte=to_datetime)
+        obs_qs = metric.related_observations.filter(from_datetime__gte=from_datetime, to_datetime__lte=to_datetime)
         if not obs_qs:
             return None
         else:
+            obs_class = unit.observation_type.model_class()
             if obs_class is CountObservation:
                 try:
                     obs_aggregate = obs_qs.aggregate(value=Sum('value'))
@@ -158,18 +167,18 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
     
 
 def observations_for_daterange(request, from_year, from_month, from_day, to_year, to_month, to_day):
-    ordered_units = UnitCollection.objects.select_related().get(name='Default').ordered_units()
+    ordered_units = UnitList.objects.get(default=True).ordered()
     latest_observation = Observation.objects.filter(metric__unit__in=ordered_units).latest('to_datetime')
     latest_datetime = latest_observation.to_datetime
     
-    extra_units = Unit.objects.all().exclude(id__in=[o.unit_id for o in ordered_units])
+    extra_units = Unit.objects.all().exclude(id__in=[u.id for u in ordered_units])
 
     from_datetime = datetime.datetime(int(from_year), int(from_month), int(from_day), 0, 0, 0)
     to_datetime = datetime.datetime(int(to_year), int(to_month), int(to_day), 23, 59, 59)
     
     object_list = []
     
-    projects = Project.objects.select_related().all()
+    projects = ProjectList.objects.get(default=True).items.all()
     for project in projects:
         obj = {
             'project': project,
@@ -177,7 +186,7 @@ def observations_for_daterange(request, from_year, from_month, from_day, to_year
             'extra_observations': []
         }
         for ordered_unit in ordered_units:
-            obj['observations'].append( _aggregate_observation_by_class(ordered_unit.unit, project, from_datetime, to_datetime) )
+            obj['observations'].append( _aggregate_observation_by_class(ordered_unit, project, from_datetime, to_datetime) )
         for extra_unit in extra_units:
             obj['extra_observations'].append( _aggregate_observation_by_class(extra_unit, project, from_datetime, to_datetime) )
             

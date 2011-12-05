@@ -1,7 +1,7 @@
 jQuery(document).ready(function($) {
     // Bits stolen! from django source
-    var tbody = "#orderedmembership_set-group .tabular.inline-related tbody";
-    var row = 'tr.has_original.dynamic-orderedmembership_set';
+    var tbody = ".tabular.inline-related tbody";
+    var row = 'tr.has_original';
     var rows = tbody + ' ' + row;
     var alternatingRows = function(row) {
         $(rows).not(".add-row").removeClass("row1 row2")
