@@ -16,59 +16,67 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+CATEGORY_DICT = { v: k for k,v in CATEGORIES }
 
 def _get_dateform(from_datetime, to_datetime):
     return DateRangeForm(initial={'from_datetime': from_datetime, 'to_datetime': to_datetime})
 
+def _get_projects_in_category(category_id):
+    """Retrieve all projects that have a web metric"""
+    projects = Project.objects.all()
+    cat_metrics_ids = [wm.id for wm in Metric.objects.filter(unit__category=category_id) if wm.related_observations.count() != 0]
+    return [ p for p in projects if Metric.objects.filter(project=p, id__in=cat_metrics_ids).exists() ]
 
-def get_observations(request):
+def get_observations(request, category='web'):
     form = DateRangeForm(request.GET)
+    ordered_units = UnitList.objects.get(default_for=CATEGORY_DICT[category]).ordered()
+    latest_observation = Observation.objects.filter(metric__unit__in=ordered_units, metric__is_cumulative=False).latest('to_datetime')
+    latest_datetime = latest_observation.to_datetime
+    
+    extra_units = Unit.objects.select_related().filter(category=CATEGORY_DICT[category]).exclude(id__in=[u.id for u in ordered_units])
+
+    projects = _get_projects_in_category(CATEGORY_DICT[category])
     
     if form.is_valid():
-        from_datetime = form.cleaned_data.get('from_datetime', None)
-        to_datetime = form.cleaned_data.get('to_datetime', None)
+        raw_from_date = form.cleaned_data.get('from_datetime', None)
+        from_datetime = datetime.datetime.combine(raw_from_date, datetime.time(0, 0, 0))
+        raw_to_date = form.cleaned_data.get('to_datetime', None)
+        to_datetime = datetime.datetime.combine(raw_to_date,  datetime.time(23, 59, 59)) if raw_to_date else raw_to_date
         if from_datetime and to_datetime:
-            if from_datetime == to_datetime:
-                return HttpResponseRedirect("{0}?{1}".format(reverse('get-observations'), "from_datetime={}".format(from_datetime)))
+            if from_datetime.date() == to_datetime.date():
+                return HttpResponseRedirect("{0}?{1}".format(reverse('get-observations'), "from_datetime={}".format(from_datetime.date())))
             else:
-                return observations_for_daterange(  request, 
-                                                    from_year=from_datetime.year, 
-                                                    from_month=from_datetime.month, 
-                                                    from_day=from_datetime.day,
-                                                    to_year=to_datetime.year, 
-                                                    to_month=to_datetime.month, 
-                                                    to_day=to_datetime.day)
+                object_list, from_datetime, to_datetime = observations_for_daterange(   projects, 
+                                                                                        ordered_units, 
+                                                                                        extra_units, 
+                                                                                        from_datetime,
+                                                                                        to_datetime )
         elif from_datetime:
-            return observations_for_day(request, year=from_datetime.year, month=from_datetime.month, day=from_datetime.day)
+            object_list, from_datetime, to_datetime = observations_for_day(projects, ordered_units, extra_units, from_datetime)
+    else:
+        object_list, from_datetime, to_datetime = observations_for_day(projects, ordered_units, extra_units, latest_datetime)
+    form = _get_dateform(from_datetime, to_datetime) 
+    return render(request, "dashboard/project_list.html", dictionary={  'object_list': object_list,
+                                                                        'ordered_units': ordered_units,
+                                                                        'from_datetime': from_datetime,
+                                                                        'to_datetime': to_datetime,
+                                                                        'form': form,
+                                                                        'latest_datetime': latest_datetime,
+                                                                        'categories': CATEGORIES
+                                                                      })
+    
 
-    return observations_for_day(request)
 
-
-def observations_for_day(request, year=None, month=None, day=None):
+def observations_for_day(projects, ordered_units, extra_units, day_datetime):
     """View for displaying a set of metric observations across all projects"""
     
-    ordered_units = UnitList.objects.get(default=True).ordered()
-    
-    extra_units = Unit.objects.select_related().filter(category=1).exclude(id__in=[o.id for o in ordered_units])
-    
-    logger.debug('Requested for {month} {day} {year}'.format(month=month, day=day, year=year))
-    
-    
-    latest_observation = Observation.objects.filter(metric__unit__in=ordered_units).latest('to_datetime')
-    latest_datetime = latest_observation.to_datetime
-    if not (year and month and day):
-        year    = latest_datetime.year
-        month   = latest_datetime.month
-        day     = latest_datetime.day
-        
-    from_datetime = datetime.datetime(int(year), int(month), int(day), 0, 0, 0)
-    to_datetime = datetime.datetime(int(year), int(month), int(day), 23, 59, 59)
+    logger.debug('Requested for {month} {day} {year}'.format(month=day_datetime.month, day=day_datetime.day, year=day_datetime.year))
+    from_datetime = day_datetime
+    to_datetime = datetime.datetime(int(day_datetime.year), int(day_datetime.month), int(day_datetime.day), 23, 59, 59)
         
     object_list = []
     
-    projects = ProjectList.objects.get(default=True).items.all()
     for project in projects:
-        project_metrics = Metric.objects.filter(project=project)
         obj = {
             'project': project,
             'observations': [],
@@ -78,7 +86,7 @@ def observations_for_day(request, year=None, month=None, day=None):
         for ordered_unit in ordered_units:
             logger.debug('unit in unitcol is {unit}'.format(unit=ordered_unit.slug))
             try:
-                metric = project_metrics.get(unit=ordered_unit)
+                metric = Metric.objects.get(project=project, unit=ordered_unit)
                 try:
                     proj_obs = metric.related_observations.latest('to_datetime')
                     obj['observations'].append(proj_obs)
@@ -89,7 +97,7 @@ def observations_for_day(request, year=None, month=None, day=None):
                 obj['observations'].append(None)
         for extra_unit in extra_units:
             try:
-                metric = project_metrics.get(unit=extra_unit)
+                metric = Metric.objects.get(project=project, unit=extra_unit)
                 try:
                     proj_obs = metric.related_observations.latest('to_datetime')
                     obj['extra_observations'].append(proj_obs)
@@ -101,14 +109,7 @@ def observations_for_day(request, year=None, month=None, day=None):
         obj['annotations'] = Annotation.objects.filter(project=project).order_by('-timestamp')
         object_list.append(obj)
     
-    form = _get_dateform(from_datetime, to_datetime)
-    return render(request, "dashboard/project_list.html", dictionary={  'object_list': object_list,
-                                                                        'ordered_units': ordered_units,
-                                                                        'from_datetime': from_datetime,
-                                                                        'to_datetime': to_datetime,
-                                                                        'form': form,
-                                                                        'latest_datetime': latest_datetime
-                                                                      })
+    return (object_list, from_datetime, to_datetime)
 
 
 def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
@@ -166,19 +167,9 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
                 return None
     
 
-def observations_for_daterange(request, from_year, from_month, from_day, to_year, to_month, to_day):
-    ordered_units = UnitList.objects.get(default=True).ordered()
-    latest_observation = Observation.objects.filter(metric__unit__in=ordered_units).latest('to_datetime')
-    latest_datetime = latest_observation.to_datetime
-    
-    extra_units = Unit.objects.all().exclude(id__in=[u.id for u in ordered_units])
-
-    from_datetime = datetime.datetime(int(from_year), int(from_month), int(from_day), 0, 0, 0)
-    to_datetime = datetime.datetime(int(to_year), int(to_month), int(to_day), 23, 59, 59)
-    
+def observations_for_daterange(projects, ordered_units, extra_units, from_datetime, to_datetime):
     object_list = []
     
-    projects = ProjectList.objects.get(default=True).items.all()
     for project in projects:
         obj = {
             'project': project,
@@ -190,14 +181,6 @@ def observations_for_daterange(request, from_year, from_month, from_day, to_year
         for extra_unit in extra_units:
             obj['extra_observations'].append( _aggregate_observation_by_class(extra_unit, project, from_datetime, to_datetime) )
             
-            
         object_list.append(obj)
     
-    form = _get_dateform(from_datetime, to_datetime)
-    return render(request, "dashboard/project_list.html", dictionary={  'object_list': object_list,
-                                                                        'ordered_units': ordered_units,
-                                                                        'from_datetime': from_datetime,
-                                                                        'to_datetime': to_datetime,
-                                                                        'form': form,
-                                                                        'latest_datetime': latest_datetime
-                                                                      })
+    return (object_list, from_datetime, to_datetime)
