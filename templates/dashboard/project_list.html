@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block header %}
-<form id="pickdaterange" action="{% url get-observations %}" method="get" accept-charset="utf-8">
+<form id="pickdaterange" action="" method="get" accept-charset="utf-8">
     <ul class="clearfix">
         <li>
             <label for="from_datetime">From</label>
@@ -18,9 +18,14 @@
         <li><input type="submit" value="Update"></li>
     </ul>
 </form>
+<nav id="category-nav">
+    <ul class="clearfix">{% for c in categories %}
+        <li {% if forloop.last %}class="last"{% endif %}><a href="{% ifnotequal c.1 'web' %}{% url get-category-observations category=c.1 %}{% else %}{% url get-observations %}{% endifnotequal %}">{{ c.1|title }}</a></li>{% endfor %}
+    </ul>
+</nav>
 {% endblock header %}
 
-{% block content %}{% with numcols=ordered_units.count|add:"1" %}
+{% block content %}{% with numcols=ordered_units|length|add:"1" %}
     <table id="analytics">
         <thead>
             <tr>

@@ -106,6 +106,32 @@ header {
     position: relative;
 }
 
+header li {
+    display: block;
+    float: left;
+    margin: 5px 10px 5px 0;
+}
+
+nav#category-nav {
+    position: absolute;
+    right: 0;
+    bottom: 10px;
+}
+
+#category-nav li {
+    font-size: 150%;
+    margin-right: 20px;
+}
+
+#category-nav li.last, #category-nav li:last-child {
+    margin-right: 0px;
+}
+
+#category-nav a {
+    text-decoration: none;
+    font-weight: bold;
+}
+
 #main {
     border-top: 1px solid #FDFCF6;
     padding-top: 28px;
@@ -214,12 +240,6 @@ input.datefield {
 
 #pickdaterange {
     margin-top: 10px;
-}
-
-header li {
-    display: block;
-    float: left;
-    margin: 5px 10px 5px 0;
 }
 
 #pickdaterange ul {
