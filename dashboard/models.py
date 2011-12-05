@@ -9,12 +9,13 @@ from metrics.models import *
 class BaseOrderedList(models.Model):
     name = models.CharField(blank=True, max_length=255)
     slug = models.SlugField(unique=True)
-    default = models.BooleanField(default=False)
+    # default = models.BooleanField(default=False)
+    default_for = models.IntegerField(choices=CATEGORIES, null=True)
     _ordered_items = None
     
     class Meta:
         abstract = True
-        ordering = ('-default', 'name')
+        ordering = ('name',)
     
     def __unicode__(self):
         return "List: {name}".format(name=self.name)
@@ -33,9 +34,9 @@ class BaseOrderedList(models.Model):
     def ordered(self):
         """returns a list of units ordered by their membership order value"""
         if not self._ordered_items:
-            if self.items:
-                ordered_items = self.items.through.objects.order_by('order')
-                self._ordered_items = [i.unit for i in ordered_items]
+            if self.items.count():
+                ordered_members = self.items.through.objects.filter(orderedlist=self).order_by('order')
+                self._ordered_items = [m.unit for m in ordered_members]
             else:
                 self._ordered_items =  []
         return self._ordered_items

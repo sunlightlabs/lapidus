@@ -22,7 +22,7 @@ class OrderedListMembershipInline(admin.TabularInline):
     classes = ('orderedinline',)
 
 class OrderedListAdmin(admin.ModelAdmin):
-    list_display = ('name', 'default')
+    list_display = ('name', 'default_for')
     form = OrderedListModelForm
     prepopulated_fields = {'slug': ('name',)}
 
