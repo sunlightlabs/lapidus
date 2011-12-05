@@ -30,7 +30,9 @@ class Command(BaseCommand):
     help = """Load Facebook data for website projects."""
     
     def handle(self, *args, **options):
-        projects = Project.objects.filter(url__isnull=False)
+        verbosity = int(options.get('verbosity'))
+
+        projects = Project.objects.filter(url__isnull=False).exclude(url__exact='')
         (unit, unit_created) = Unit.objects.get_or_create(
             name=FACEBOOK_METRIC["name"],
             slug=slugify(FACEBOOK_METRIC["name"]),
@@ -38,7 +40,8 @@ class Command(BaseCommand):
             period=6
         )
         observation_class = unit.observation_type.model_class()
-        logger.debug('\nloadfacebook got {projects}\n'.format(projects=repr(projects)))
+        if verbosity >= 2:
+            self.stdout.write('\nloadfacebook got {projects}\n'.format(projects=repr(projects)))
         proj_by_fbid = {}
         # make a dict of projects by Facebook-friendly url/id.
         for p in projects:
@@ -48,7 +51,8 @@ class Command(BaseCommand):
             proj_by_fbid[fbid] = p
         # Make a single request for all of the data points
         url_str = ','.join([key for key in proj_by_fbid.iterkeys()])
-        logger.debug('url_str: {url_str}\n'.format(url_str=url_str))
+        if verbosity >= 2:
+            self.stdout.write('url_str: {url_str}\n'.format(url_str=url_str))
         params = urlencode({'ids': url_str})
         fp = urlopen("{base_url}?{params}".format(base_url=FACEBOOK_GRAPH_URL, params=params))
         results = json.load(fp)
@@ -61,7 +65,7 @@ class Command(BaseCommand):
                                                 to_datetime=datetime.datetime.now(),
                                                 value=r['shares']
                                             )
-            logger.debug("{project}'s {unit} for {datetime}: {obs}".format(
+            self.stdout.write("{project}'s {unit} for {datetime}: {obs}\n".format(
                 project=proj.name,
                 unit=unit.name,
                 datetime=observation.from_datetime,

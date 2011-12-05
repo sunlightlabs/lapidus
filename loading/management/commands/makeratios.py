@@ -70,11 +70,15 @@ class Command(BaseCommand):
                 except Metric.DoesNotExist:
                     msg = 'antecedent metric "{metric}" does not exist for {project}\n'.format(metric=ratio['antecedent'], project=project)
                     self.stderr.write(msg)
+                    self.stderr.write("Skipping '{metric}' on {project}\n".format(metric=ratio['antecedent'], project=project))
+                    continue
                 try:
                     consequent_metric = Metric.objects.get(project=project, unit__slug=ratio['consequent'])
                 except Metric.DoesNotExist:
                     msg = 'consequent metric "{metric}" does not exist for {project}\n'.format(metric=ratio['consequent'], project=project)
                     self.stderr.write(msg)
+                    self.stderr.write("Skipping '{metric}' on {project}\n".format(metric=ratio['antecedent'], project=project))
+                    continue
                 ratio_metric = Metric.objects.get(project=project, unit=u) # We already searched for it then created it
                 antecedent_class = antecedent_metric.unit.observation_type.model_class()
                 consequent_class = consequent_metric.unit.observation_type.model_class()
