@@ -166,6 +166,19 @@ input.datefield {
     margin-right: 15px;
 }
 
+section {
+    margin-bottom: 20px;
+}
+
+section > h1 {
+    font-size: 120%;
+    margin-bottom: 10px;
+}
+
+section > .observation {
+    font-size: 200%;
+}
+
 .sf_mini_header {
   background: url('/static/img/sf_mini_nav_bg.jpg') center top no-repeat;
   background-color: #b7d2ef;
@@ -290,6 +303,33 @@ input.datefield {
     border: none;
 }
 
+ol#observations {
+    list-style-type: none;
+    margin-left: 0;
+}
+
+#observations > li {
+    display: block;
+    float: left;
+    width: 160px;
+    min-height: 100px;
+    margin-right: 40px;
+}
+
+#observations > li.last {
+    margin-right: 0;
+}
+
+#observations h2 {
+    font-size: 120%;
+    margin-bottom: 10px;
+    height: 40px;
+}
+
+p.observation {
+    font-size: 180%;
+}
+
 .secondary th {
     cursor: auto;
     width: auto;
@@ -350,6 +390,10 @@ li {
     max-width: 120px;
     padding-left: 18px;
     text-align: left;
+}
+
+.project #analytics th > span {
+    padding-left: 0;
 }
 
 #analytics tr.primary > th {
