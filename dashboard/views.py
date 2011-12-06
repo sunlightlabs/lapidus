@@ -27,15 +27,18 @@ def _get_projects_in_category(category_id):
     cat_metrics_ids = [wm.id for wm in Metric.objects.filter(unit__category=category_id) if wm.related_observations.count() != 0]
     return [ p for p in projects if Metric.objects.filter(project=p, id__in=cat_metrics_ids).exists() ]
 
-def get_observations(request, category='web'):
+def get_observations(request, category='web', project=None):
     form = DateRangeForm(request.GET)
     ordered_units = UnitList.objects.get(default_for=CATEGORY_DICT[category]).ordered()
     latest_observation = Observation.objects.filter(metric__unit__in=ordered_units, metric__is_cumulative=False).latest('to_datetime')
     latest_datetime = latest_observation.to_datetime
     
     extra_units = Unit.objects.select_related().filter(category=CATEGORY_DICT[category]).exclude(id__in=[u.id for u in ordered_units])
-
-    projects = _get_projects_in_category(CATEGORY_DICT[category])
+    
+    if project:
+        projects = [Project.objects.get(slug=project)]
+    else:
+        projects = _get_projects_in_category(CATEGORY_DICT[category])
     
     if form.is_valid():
         raw_from_date = form.cleaned_data.get('from_datetime', None)
@@ -55,15 +58,21 @@ def get_observations(request, category='web'):
             object_list, from_datetime, to_datetime = observations_for_day(projects, ordered_units, extra_units, from_datetime)
     else:
         object_list, from_datetime, to_datetime = observations_for_day(projects, ordered_units, extra_units, latest_datetime)
-    form = _get_dateform(from_datetime, to_datetime) 
-    return render(request, "dashboard/project_list.html", dictionary={  'object_list': object_list,
-                                                                        'ordered_units': ordered_units,
-                                                                        'from_datetime': from_datetime,
-                                                                        'to_datetime': to_datetime,
-                                                                        'form': form,
-                                                                        'latest_datetime': latest_datetime,
-                                                                        'categories': CATEGORIES
-                                                                      })
+    form = _get_dateform(from_datetime, to_datetime)
+    
+    if project:
+        template = "dashboard/project_detail.html"
+    else:
+        template = "dashboard/project_list.html"
+    
+    return render(request, template, dictionary= { 'object_list': object_list,
+                                                   'ordered_units': ordered_units,
+                                                   'from_datetime': from_datetime,
+                                                   'to_datetime': to_datetime,
+                                                   'form': form,
+                                                   'latest_datetime': latest_datetime,
+                                                   'categories': CATEGORIES
+                                                })
     
 
 

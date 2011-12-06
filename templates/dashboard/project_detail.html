@@ -1,0 +1,35 @@
+{% extends "dashboard/project_list.html" %}{% load dashboard_filters humanize %}
+{% block body_class %}project{% endblock body_class %}
+{% block content %}{% with object_list.0 as object %}
+
+<h1>{{ object.project.name }}</h1>
+<table id="analytics">
+    <thead>
+        <tr>
+            {% for u in ordered_units %}
+            <th><span>{{ u.name }}</span></th>{% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        <tr>{% for o in object.observations %}
+            <td class='{{ o.metric.unit.slug }} {{ o.metric.observation_type.model }}'>
+                {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
+            </td>{% endfor %}
+        </tr>
+    </tbody>
+</table>
+{# <ol id="observations" class='clearfix'>{% for o in object.observations %} #}
+{#     <li id="{{ o.metric.unit.slug }}" {% if forloop.last %}class="last"{% endif %}> #}
+{#         <h2>{{ o.metric.unit.name }}</h2> #}
+{#         {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %} #}
+{#     </li>{% endfor %} #}
+{# </ol> #}
+{% endwith %}{% endblock content %}
+
+{% block js %}
+<script src="{{ STATIC_URL }}js/libs/jquery-ui-1.8.16.custom.min.js"></script>
+<script>
+    var MAX_DATE = '{{ latest_datetime|date:"Y-m-d" }}';
+</script>
+<script src="{{ STATIC_URL }}js/script.js"></script>
+{% endblock js %}
