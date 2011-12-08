@@ -1,4 +1,5 @@
 {% extends "dashboard/project_list.html" %}{% load dashboard_filters humanize %}
+
 {% block body_class %}project{% endblock body_class %}
 {% block content %}{% with object_list.0 as object %}
 
@@ -7,29 +8,63 @@
     <thead>
         <tr>
             {% for u in ordered_units %}
-            <th><span>{{ u.name }}</span></th>{% endfor %}
+            <th><span><a href="#{{ u.slug }}">{{ u.name }}</a></span></th>{% endfor %}
         </tr>
     </thead>
     <tbody>
-        <tr>{% for o in object.observations %}
-            <td class='{{ o.metric.unit.slug }} {{ o.metric.observation_type.model }}'>
+        <tr>{% for datap in object.observations %}
+            <td class='{{ datap.metric.unit.slug }} {{ datap.metric.unit.observation_type.model }}'>
                 {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
             </td>{% endfor %}
         </tr>
     </tbody>
 </table>
-{# <ol id="observations" class='clearfix'>{% for o in object.observations %} #}
-{#     <li id="{{ o.metric.unit.slug }}" {% if forloop.last %}class="last"{% endif %}> #}
-{#         <h2>{{ o.metric.unit.name }}</h2> #}
-{#         {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %} #}
-{#     </li>{% endfor %} #}
-{# </ol> #}
+{% for datap in object.observations %}{% if "observations" in datap %}
+<section id="{{ datap.metric.unit.slug }}" class="unit-observations">
+    <h2>{{ datap.metric.unit.name|title }}</h2>
+    {% ifnotequal datap.metric.unit.observation_type.model "listobservation"  %}
+    <div class="aggregate-value">
+        {% ifequal datap.metric.unit.observation_type.model "ratioobservation" %}
+        <p class="observation" data-value="{{ datap.ratioobservation.value }}">{% spaceless %}{% ifequal datap.ratioobservation.antecedent.metric.unit.observation_unit "seconds" %}
+            {{ datap.ratioobservation.value|secondstoduration }}
+            {% else %}
+                {% ifequal datap.metric.unit.observation_unit "percentage"  %}
+                {{ datap.ratioobservation.value|percentage:2}}
+                {% else %}
+                {{ datap.ratioobservation.value|floatformat:1}}
+                {% endifequal %}
+            {% endifequal %}
+            {% endspaceless %}</p>
+        {% endifequal %}
+        {% ifequal datap.metric.unit.observation_type.model "countobservation" %}
+        <p class="observation" data-value="{{ datap.countobservation.value }}">{% spaceless %}{% ifequal datap.metric.unit.observation_unit "seconds" %}
+            {{ datap.countobservation.value|secondstoduration }}
+            {% else %}
+            {{ datap.countobservation.value|intcomma }}
+            {% endifequal %}
+        {% endspaceless %}</p>
+        {% endifequal %}
+    </div>
+    <div class="chart"></div>
+    {% endifnotequal %}
+    <table id="data-{{ datap.metric.unit.slug }}" class="data-table">{% for sub_datap in datap.observations reversed %}
+        <tr class="datapoint">
+            <td><time data-milliseconds="{{ sub_datap.to_datetime|datetime_to_ms }}" datetime="{{ sub_datap.to_datetime|date:'c' }}">{{ sub_datap.to_datetime|date:'M d, Y' }}</time></td>
+            <td>
+                {% spaceless %}{% include "dashboard/snippets/_render_observation.html" with datap=sub_datap %}{% endspaceless %}
+            </td>
+        </tr>{% endfor %}
+    </table>
+</section>{% endif %}{% endfor %}
 {% endwith %}{% endblock content %}
 
 {% block js %}
-<script src="{{ STATIC_URL }}js/libs/jquery-ui-1.8.16.custom.min.js"></script>
-<script>
+<script src="{{ STATIC_URL }}js/libs/jquery-ui-1.8.16.custom.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="{{ STATIC_URL }}js/libs/jquery.flot.min.js" type="text/javascript" charset="utf-8"></script>
+<!--[if lte IE 8]><script language="javascript" type="text/javascript" src="excanvas.min.js"></script><![endif]-->
+<script type="text/javascript">
     var MAX_DATE = '{{ latest_datetime|date:"Y-m-d" }}';
 </script>
-<script src="{{ STATIC_URL }}js/script.js"></script>
+<script src="{{ STATIC_URL }}js/charts.js" type="text/javascript" charset="utf-8"></script>
+<script src="{{ STATIC_URL }}js/script.js" type="text/javascript" charset="utf-8"></script>
 {% endblock js %}

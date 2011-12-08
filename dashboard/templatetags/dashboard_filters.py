@@ -29,3 +29,9 @@ def percentage(value, arg=0):
     return "{value:.{precision}%}".format(value=value, precision=int(arg))
 
 register.filter('percentage', percentage)
+
+import calendar
+
+def datetime_to_ms_str(dt):
+    return str( calendar.timegm(dt.timetuple()) * 1000 )
+register.filter('datetime_to_ms', datetime_to_ms_str)

@@ -144,6 +144,7 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
             return None
         else:
             obs_class = unit.observation_type.model_class()
+            
             if obs_class is CountObservation:
                 try:
                     obs_aggregate = obs_qs.aggregate(value=Sum('value'))
@@ -151,7 +152,8 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
                         'metric': metric,
                         unit.observation_type.model : {
                             'value': obs_aggregate['value']
-                        }
+                        },
+                        'observations': obs_qs
                     }
                     return obs_dict
                 except Exception, e:
@@ -167,13 +169,18 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
                         unit.observation_type.model : {
                             'antecedent': obs_qs[0].antecedent,
                             'value': aggregate_value
-                        }
+                        },
+                        'observations': obs_qs
                     }
                     return obs_dict
                 else:
                     return None
             else:
-                return None
+                obs_dict = {
+                    'metric': metric,
+                    'observations': obs_qs
+                }
+                return obs_dict
     
 
 def observations_for_daterange(projects, ordered_units, extra_units, from_datetime, to_datetime):

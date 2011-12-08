@@ -8,11 +8,11 @@
 <form id="pickdaterange" action="" method="get" accept-charset="utf-8">
     <ul class="clearfix">
         <li>
-            <label for="from_datetime">From</label>
+            <label for="id_from_datetime">From</label>
             {{ form.from_datetime }}
         </li>
         <li>
-            <label for="to_datetime">To</label>
+            <label for="id_to_datetime">To</label>
             {{ form.to_datetime }}
         </li>
         <li><input type="submit" value="Update"></li>
@@ -37,15 +37,15 @@
         {% for object in object_list %}
             <tr id="{{ object.project.slug }}" class="primary">
                 <th scope=row>
-                    {{ object.project.name }}
-                </th>{% for o in object.observations %}
-                <td class='{{ o.metric.unit.slug }} {{ o.metric.observation_type.model }}'>
+                    {{ object.project.name }} <a href="{% url get-project-observations project=object.project.slug %}">[View site metrics]</a>
+                </th>{% for datap in object.observations %}
+                <td class='{{ datap.metric.unit.slug }} {{ datap.metric.observation_type.model }}'>
                     {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
                 </td>{% endfor %}
-            </tr>{% for o in object.extra_observations %}
+            </tr>{% for datap in object.extra_observations %}
             <tr class="secondary {% if forloop.first %}first{% endif %}">
-                <th colspan=2 scope=row>{{ o.metric.unit.name }}</th>
-                <td class='{{ o.metric.unit.slug }} {{ o.metric.observation_type.model }}' colspan={{ numcols|add:"-1" }}>
+                <th colspan=2 scope=row>{{ datap.metric.unit.name }}</th>
+                <td class='{{ datap.metric.unit.slug }} {{ datap.metric.observation_type.model }}' colspan={{ numcols|add:"-1" }}>
                     {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
                 </td>
             </tr>{% endfor %}{% if object.annotations %}

@@ -143,6 +143,11 @@ h1 {
     margin-bottom: 30px;
 }
 
+h2 {
+    margin-bottom: 10px;
+    font-size: 150%;
+}
+
 label {
     font-weight: bold;
     margin-right: 4px;
@@ -167,7 +172,8 @@ input.datefield {
 }
 
 section {
-    margin-bottom: 20px;
+    position: relative;
+    margin-bottom: 50px;
 }
 
 section > h1 {
@@ -259,47 +265,45 @@ section > .observation {
     margin-left: 0;
 }
 
-#analytics table{
+table {
     width: 100%;
-    margin-top: 25px;
+    margin-bottom: 50px;
 }
 
-#analytics thead th {
+thead th {
     vertical-align: middle;
-}
-#analytics tbody th, #analytics th.header {
-    cursor: pointer;
+    border-bottom: 1px solid #E1DFDA;
 }
 
 .header:hover {
     background-color: #EDF4C4;
 }
 
-#analytics thead th {
-    border-bottom: 1px solid #E1DFDA;
+td, th {
+    padding: 8px 12px;
 }
 
-#analytics tbody td, #analytics tbody th {
+tbody td, tbody th {
     border-top: 1px solid #E1DFDA;
 }
 
-#analytics tbody tr {
+tbody tr {
     background: #F8F7F2;
 }
 
-#analytics tbody tr.odd {
+tbody tr.odd {
     background-color: #FCFBF9;
 }
 
-#analytics tr.primary {
+tr.primary {
     height: 120px;
 }
 
-#analytics tbody tr.secondary.first td, #analytics tbody tr.secondary.first th {
+tbody tr.secondary.first td, tbody tr.secondary.first th {
     border-top: 1px solid #EFEEE9;
 }
 
-#analytics tbody tr.secondary td, #analytics tbody tr.secondary th {
+tbody tr.secondary td, tbody tr.secondary th {
     border: none;
 }
 
@@ -343,8 +347,23 @@ p.observation {
     text-align: left;
 }
 
-#analytics td, #analytics th {
+table.data-table {
+    margin-bottom: 40px;
+}
+
+table.data-table td {
     padding: 8px 12px;
+}
+
+.data-table p {
+    text-align: left;
+}
+
+#analytics tbody th, #analytics th.header {
+    cursor: pointer;
+}
+
+#analytics td, #analytics th {
     vertical-align: middle;
 }
 
@@ -360,7 +379,7 @@ p.observation {
     padding-bottom: 12px;
 }
 
-.primary td > p {
+td > p {
     color: #706B68;
     font-size: 184.5%;
     font-weight: bold;
@@ -503,33 +522,18 @@ p.metric {
     white-space: nowrap;
 }
 
-/*
-    SVG styles below
-*/
-
-path {
-    stroke: #72A6D8;
-    stroke-width: 1;
-    fill: none;
+div.chart {
+    width: 100%;
+    height: 200px;
+    margin: 15px 0px;
 }
 
-
-/*
-.bullet { font: 10px sans-serif; }
-.bullet .marker { stroke: #000; stroke-width: 2px; }
-.bullet .tick line { stroke: #666; stroke-width: .5px; }
-.bullet .range.s0 { fill: #eee; }
-.bullet .range.s1 { fill: #ddd; }
-.bullet .range.s2 { fill: #ccc; }
-.bullet .measure.s0 { fill: #72A6D8; }
-.bullet .measure.s1 { fill: #43719C; }
-.bullet .title { font-size: 14px; font-weight: bold; }
-.bullet .subtitle { fill: #999; }*/
-
-
-
-
-
+div.aggregate-value {
+    position: absolute;
+    right: 0;
+    top: 0;
+    font-weight: bold;
+}
 
 
 .ir { display: block; text-indent: -999em; overflow: hidden; background-repeat: no-repeat; text-align: left; direction: ltr; }
@@ -541,34 +545,3 @@ path {
 .clearfix:before, .clearfix:after { content: "\0020"; display: block; height: 0; overflow: hidden; }
 .clearfix:after { clear: both; }
 .clearfix { zoom: 1; }
-
-
-@media all and (orientation:portrait) {
-
-}
-
-@media all and (orientation:landscape) {
-
-}
-
-@media screen and (max-device-width: 480px) {
-  
-  /* html { -webkit-text-size-adjust:none; -ms-text-size-adjust:none; } */
-}
-
-
-@media print {
-  * { background: transparent !important; color: black !important; text-shadow: none !important; filter:none !important;
-  -ms-filter: none !important; } 
-  a, a:visited { color: #444 !important; text-decoration: underline; }
-  a[href]:after { content: " (" attr(href) ")"; }
-  abbr[title]:after { content: " (" attr(title) ")"; }
-  .ir a:after, a[href^="javascript:"]:after, a[href^="#"]:after { content: ""; }  
-  pre, blockquote { border: 1px solid #999; page-break-inside: avoid; }
-  thead { display: table-header-group; } 
-  tr, img { page-break-inside: avoid; }
-  @page { margin: 0.5cm; }
-  p, h2, h3 { orphans: 3; widows: 3; }
-  h2, h3{ page-break-after: avoid; }
-}
-
