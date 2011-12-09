@@ -64,39 +64,39 @@ class MetricAdmin(admin.ModelAdmin):
         self.inline_instances = []
         return super(MetricAdmin, self).add_view(request, form_url, extra_context)
     
-    def change_view(self, request, object_id, extra_context=None):
-        logger.debug('change_view had inlines: {inlines}'.format(inlines=self.inlines))
-        self.append_inline_class_and_instance(request, object_id)        
-        return super(MetricAdmin, self).change_view(request, object_id, extra_context)
-        
-    def get_inline_instances(self, request):
-        inline_instances = self.generate_inline_instances()
-        return inline_instances
-
-    def append_inline_class_and_instance(self, request, object_id):
-        obj = self.get_object(request, unquote(object_id))
-        model_class = obj.unit.observation_type.model_class()
-        observation_inlines = {
-                CountObservationInline.model: CountObservationInline, 
-                ListObservationInline.model : ListObservationInline, 
-                RatioObservationInline.model: RatioObservationInline
-        }
-        inline_class = observation_inlines[model_class]
-        self.inlines = [inline_class,]
-        # if inline_class not in self.inlines:
-        #     self.inlines.append(inline_class)
-        if hasattr(self, 'inline_instances'):
-            # This works in Django 1.3 and lower
-            # In Django 1.4 inline instances are generated using overridden get_inline_instances()
-            self.inline_instances = self.generate_inline_instances()
-        
-        logger.debug('Appended inlines: {inlines}'.format(inlines=self.inlines))
-    
-    def generate_inline_instances(self):
-        inline_instances = []
-        for inline_class in self.inlines:
-            inline_instance = inline_class(self.model, self.admin_site)
-            inline_instances.append(inline_instance)
-        return inline_instances
+    # def change_view(self, request, object_id, extra_context=None):
+    #     logger.debug('change_view had inlines: {inlines}'.format(inlines=self.inlines))
+    #     self.append_inline_class_and_instance(request, object_id)        
+    #     return super(MetricAdmin, self).change_view(request, object_id, extra_context)
+    #     
+    # def get_inline_instances(self, request):
+    #     inline_instances = self.generate_inline_instances()
+    #     return inline_instances
+    # 
+    # def append_inline_class_and_instance(self, request, object_id):
+    #     obj = self.get_object(request, unquote(object_id))
+    #     model_class = obj.unit.observation_type.model_class()
+    #     observation_inlines = {
+    #             CountObservationInline.model: CountObservationInline, 
+    #             ListObservationInline.model : ListObservationInline, 
+    #             RatioObservationInline.model: RatioObservationInline
+    #     }
+    #     inline_class = observation_inlines[model_class]
+    #     self.inlines = [inline_class,]
+    #     # if inline_class not in self.inlines:
+    #     #     self.inlines.append(inline_class)
+    #     if hasattr(self, 'inline_instances'):
+    #         # This works in Django 1.3 and lower
+    #         # In Django 1.4 inline instances are generated using overridden get_inline_instances()
+    #         self.inline_instances = self.generate_inline_instances()
+    #     
+    #     logger.debug('Appended inlines: {inlines}'.format(inlines=self.inlines))
+    # 
+    # def generate_inline_instances(self):
+    #     inline_instances = []
+    #     for inline_class in self.inlines:
+    #         inline_instance = inline_class(self.model, self.admin_site)
+    #         inline_instances.append(inline_instance)
+    #     return inline_instances
         
 admin.site.register(Metric, MetricAdmin)
