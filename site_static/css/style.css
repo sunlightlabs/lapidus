@@ -78,12 +78,8 @@ a:hover { color: #036; }
 /**
  * Primary styles
  *
- * Author: 
+ * Author: Daniel Cloud
  */
-
-/*
-    TODO gradient for bg
-*/
 
 body {
     font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -148,12 +144,25 @@ h2 {
     font-size: 150%;
 }
 
+h3 {
+    margin-bottom: 8px;
+}
+
+h3.table-toggle {
+    display: inline-block;
+}
+
+h3.table-toggle > a {
+    text-decoration: none;
+}
+
+
 label {
     font-weight: bold;
     margin-right: 4px;
 }
 
-input {
+h3.table-toggle, input {
     color: #767570;
     background-color: #FDFCF7;
     border: 1px solid #E1DFD9;
@@ -285,6 +294,10 @@ td, th {
 
 tbody td, tbody th {
     border-top: 1px solid #E1DFDA;
+}
+
+thead th a {
+    text-decoration: none;
 }
 
 tbody tr {

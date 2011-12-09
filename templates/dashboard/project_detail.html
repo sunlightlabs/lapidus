@@ -46,15 +46,18 @@
         {% endifequal %}
     </div>
     <div class="chart"></div>
+    <h3 class="table-toggle"><a href="#data-{{ datap.metric.unit.slug }}">View Data Table</a></h3>
     {% endifnotequal %}
-    <table id="data-{{ datap.metric.unit.slug }}" class="data-table">{% for sub_datap in datap.observations reversed %}
-        <tr class="datapoint">
-            <td><time data-milliseconds="{{ sub_datap.to_datetime|datetime_to_ms }}" datetime="{{ sub_datap.to_datetime|date:'c' }}">{{ sub_datap.to_datetime|date:'M d, Y' }}</time></td>
-            <td>
-                {% spaceless %}{% include "dashboard/snippets/_render_observation.html" with datap=sub_datap %}{% endspaceless %}
-            </td>
-        </tr>{% endfor %}
-    </table>
+    <div id="data-{{ datap.metric.unit.slug }}" class="table-wrapper">
+        <table class="data-table">{% for sub_datap in datap.observations reversed %}
+            <tr class="datapoint">
+                <td><time data-milliseconds="{{ sub_datap.to_datetime|datetime_to_ms }}" datetime="{{ sub_datap.to_datetime|date:'c' }}">{{ sub_datap.to_datetime|date:'M d, Y' }}</time></td>
+                <td>
+                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" with datap=sub_datap %}{% endspaceless %}
+                </td>
+            </tr>{% endfor %}
+        </table>        
+    </div>
 </section>{% endif %}{% endfor %}
 {% endwith %}{% endblock content %}
 

@@ -56,8 +56,15 @@ jQuery(document).ready(function($) {
                     previousPoint = null;            
                 }
             });
-            $(element).find('.data-table').hide();
+            $(element).find('.table-wrapper').hide();
+            
         }
+    });
+    
+    $('.table-toggle > a').on("click", function(event) {
+        console.log( event );
+        $($(this).attr('href')).slideToggle();
+        event.preventDefault();
     });
     
 });
