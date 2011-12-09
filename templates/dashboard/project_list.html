@@ -37,8 +37,10 @@
         {% for object in object_list %}
             <tr id="{{ object.project.slug }}" class="primary">
                 <th scope=row>
-                    {{ object.project.name }} <a href="{% url get-project-observations project=object.project.slug %}">[View site metrics]</a>
-                </th>{% for datap in object.observations %}
+                    <span>{{ object.project.name }}</span>
+                    <span><a href="{% url get-project-observations project=object.project.slug %}">[More]</a></span>
+                </th>
+                {% for datap in object.observations %}
                 <td class='{{ datap.metric.unit.slug }} {{ datap.metric.observation_type.model }}'>
                     {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
                 </td>{% endfor %}
