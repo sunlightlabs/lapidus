@@ -7,8 +7,9 @@
 <table id="analytics">
     <thead>
         <tr>
-            {% for u in ordered_units %}
-            <th><span><a href="#{{ u.slug }}">{{ u.name }}</a></span></th>{% endfor %}
+            {% for datap in object.observations %}
+            <th><span><a href="#{{ datap.metric.unit.slug }}">{{ datap.metric.unit.name }}</a></span></th>{% endfor %}
+            {% if object.annotations %}<th><span><a href="#annotations">Annotations</a></span></th>{% endif %}
         </tr>
     </thead>
     <tbody>
@@ -16,6 +17,7 @@
             <td class='{{ datap.metric.unit.slug }} {{ datap.metric.unit.observation_type.model }}'>
                 {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
             </td>{% endfor %}
+            <td>&nbsp;</td>
         </tr>
     </tbody>
 </table>
@@ -59,6 +61,14 @@
         </table>        
     </div>
 </section>{% endif %}{% endfor %}
+{% if object.annotations %}
+<section id="annotations">
+    <h2>Annotations</h2>
+    {% for a in object.annotations %}
+        <p><time datetime="{{ a.timestamp|date:"c" }}">{{ a.timestamp|date:"Y-m-d" }}</time>:&nbsp;<span>{{ a.text }}</span></p>
+    {% endfor %}
+</section>
+{% endif %}
 {% endwith %}{% endblock content %}
 
 {% block js %}

@@ -62,7 +62,6 @@ jQuery(document).ready(function($) {
     });
     
     $('.table-toggle > a').on("click", function(event) {
-        console.log( event );
         $($(this).attr('href')).slideToggle();
         event.preventDefault();
     });

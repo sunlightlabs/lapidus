@@ -190,12 +190,14 @@ def observations_for_daterange(projects, ordered_units, extra_units, from_dateti
         obj = {
             'project': project,
             'observations': [],
-            'extra_observations': []
+            'extra_observations': [],
+            'annotations': []
         }
         for ordered_unit in ordered_units:
             obj['observations'].append( _aggregate_observation_by_class(ordered_unit, project, from_datetime, to_datetime) )
         for extra_unit in extra_units:
             obj['extra_observations'].append( _aggregate_observation_by_class(extra_unit, project, from_datetime, to_datetime) )
+        obj['annotations'] = Annotation.objects.filter(project=project).order_by('-timestamp')
             
         object_list.append(obj)
     

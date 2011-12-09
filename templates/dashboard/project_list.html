@@ -52,7 +52,7 @@
                 </td>
             </tr>{% endfor %}{% if object.annotations %}
             <tr class="secondary">
-                <th colspan=2>Notes</th>
+                <th colspan=2>Annotations</th>
                 <td colspan={{ numcols|add:"-1" }}></td>
             </tr>{% for a in object.annotations %}
             <tr class="secondary {% if forloop.last %}last{% endif %}">

@@ -108,6 +108,10 @@ header li {
     margin: 5px 10px 5px 0;
 }
 
+p {
+    margin-bottom: 12px;
+}
+
 nav#category-nav {
     position: absolute;
     right: 0;
@@ -343,6 +347,10 @@ ol#observations {
     height: 40px;
 }
 
+#annotations time {
+    font-weight: bold;
+}
+
 p.observation {
     font-size: 180%;
 }
@@ -424,9 +432,14 @@ li {
     text-align: left;
 }
 
+#analytics thead th > span {
+    text-align: center;
+}
+
 .project #analytics th > span {
     padding-left: 0;
 }
+
 
 #analytics tr.primary > th {
     font-size: 100%;
