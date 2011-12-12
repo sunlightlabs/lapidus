@@ -5,7 +5,7 @@ from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.contrib.contenttypes.models import ContentType
 from googleanalytics import Connection
-from lapidus.metrics.models import Project, Metric, Unit, CountObservation, ListObservation, UNIT_TYPES
+from lapidus.metrics.models import Project, Metric, Unit, CountObservation, ObjectObservation, UNIT_TYPES
 import datetime
 import json
 from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
@@ -121,7 +121,7 @@ class Command(BaseCommand):
                                         from_datetime=start,
                                         to_datetime=end,
                                     )
-                                if observation_class is ListObservation:
+                                if observation_class is ObjectObservation:
                                     o.value = self._generate_sorted_list(data)
                                 else:
                                     o.value = Decimal(data[0].metrics[0].value) # certain data comes back as a float (time on site), so easier to handle as such and let mode convert

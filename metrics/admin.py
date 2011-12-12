@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.contrib.admin.util import unquote
-from lapidus.metrics.models import Annotation, Metric, Observation, CountObservation, ListObservation, RatioObservation, Project, Unit
+from lapidus.metrics.models import Annotation, Metric, Observation, CountObservation, ObjectObservation, RatioObservation, Project, Unit
 
 # import the logging library
 import logging
@@ -43,9 +43,9 @@ class CountObservationInline(admin.TabularInline):
     extra = 0
     model = CountObservation
 
-class ListObservationInline(admin.TabularInline):
+class ObjectObservationInline(admin.TabularInline):
     extra = 0
-    model = ListObservation
+    model = ObjectObservation
 
 class RatioObservationInline(admin.TabularInline):
     extra = 0
@@ -78,7 +78,7 @@ class MetricAdmin(admin.ModelAdmin):
     #     model_class = obj.unit.observation_type.model_class()
     #     observation_inlines = {
     #             CountObservationInline.model: CountObservationInline, 
-    #             ListObservationInline.model : ListObservationInline, 
+    #             ObjectObservationInline.model : ObjectObservationInline, 
     #             RatioObservationInline.model: RatioObservationInline
     #     }
     #     inline_class = observation_inlines[model_class]

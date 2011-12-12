@@ -50,7 +50,7 @@ UNIT_TYPES = (
 UNIT_MAP = {
     'count': 'countobservation',
     'seconds': 'countobservation',
-    'list': 'listobservation',
+    'list': 'objectobservation',
     'ratio': 'ratioobservation',
     'percentage': 'ratioobservation'
     
@@ -66,7 +66,7 @@ class Unit(models.Model):
     observation_type = models.ForeignKey(ContentType, editable=False, blank=True, null=True,
                                             limit_choices_to= Q(
                                                 Q(app_label='metrics'),
-                                                Q(model='countobservation') | Q(model='listobservation') | Q(model='ratioobservation')                                            
+                                                Q(model='countobservation') | Q(model='objectobservation') | Q(model='ratioobservation')                                            
                                             ))
     observation_unit = models.CharField(max_length=255, default='count', choices=UNIT_TYPES)
     
@@ -125,16 +125,6 @@ class Metric(models.Model):
     
     def __unicode__(self):
         return u"%s: %s" % (self.project.name, self.unit.name)
-    
-    # def date_range(self, start, end):
-    #     
-    #     if self.unit.period != 2:
-    #         raise ValueError('cannot iterate over dates for a non-daily metric')
-    #         
-    #     obs = self.observations.filter(from_datetime__gte=start, from_datetime__lte=end)
-    #     obs = dict((ob.from_datetime.date().isoformat(), ob) for ob in obs)
-    #     
-    #     return [(d, obs.get(d.date().isoformat(), None)) for d in daterange(start, end)]
 
 class Observation(models.Model):
     metric = models.ForeignKey(Metric, related_name="observations")
@@ -151,8 +141,8 @@ class CountObservation(Observation):
     def __unicode__(self):
         return u"<{metric}: {value}>".format(metric=self.metric, value=self.value)
 
-class ListObservation(Observation):
-    """Stores a metric observation whose value is a list/tuple stored as JSON"""
+class ObjectObservation(Observation):
+    """Stores a metric observation whose value is a data object stored as JSON. Currently limited as it validates against a 'ranked list' schema."""
     jsonvalue = JSONField()
     
     def _set_value(self, value):

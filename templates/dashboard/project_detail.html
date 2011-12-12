@@ -24,7 +24,7 @@
 {% for datap in object.observations %}{% if "observations" in datap %}
 <section id="{{ datap.metric.unit.slug }}" class="unit-observations">
     <h2>{{ datap.metric.unit.name|title }}</h2>
-    {% ifnotequal datap.metric.unit.observation_type.model "listobservation"  %}
+    {% ifnotequal datap.metric.unit.observation_type.model "objectobservation"  %}
     <div class="aggregate-value">
         {% ifequal datap.metric.unit.observation_type.model "ratioobservation" %}
         <p class="observation" data-value="{{ datap.ratioobservation.value }}">{% spaceless %}{% ifequal datap.ratioobservation.antecedent.metric.unit.observation_unit "seconds" %}
