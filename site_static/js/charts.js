@@ -1,4 +1,21 @@
 jQuery(document).ready(function($) {
+    var annotation_dialog = $('#annotation_dialog').dialog({ resizable: false, width: 400, modal: true, autoOpen: false });
+
+    $("#annotation_dialog > form").submit(function(event) {
+        var form = $(this);
+        var url = form.attr( 'action' );
+        var data = form.serializeArray();
+        console.log(form);
+        
+        $.post(url, data, function(data, textStatus, jqXHR) {
+            console.log(textStatus);
+        });
+        
+        event.preventDefault();
+        return false;
+    });
+
+    
     var options = {
         colors: ["#274868"],
         series: {
@@ -8,6 +25,7 @@ jQuery(document).ready(function($) {
         xaxis: { mode: "time", show: false },
         grid: {
             hoverable: true,
+            clickable: true,
             borderColor: "#E1DFDA"
         }
       };
@@ -45,7 +63,7 @@ jQuery(document).ready(function($) {
                         previousPoint = item.dataIndex;
                         
                         $("#tooltip").remove();
-                        var time = new Date(item.datapoint[0]).toDateString(),
+                        var time = $($(elem).find('table.data-table tr.datapoint')[item.dataIndex].children[0]).text(),
                             y = $($(elem).find('table.data-table tr.datapoint')[item.dataIndex].children[1]).text(); // Drew did it.
 
                         showTooltip(item.pageX, item.pageY, time + ": <strong>" + y + "</strong>");
@@ -56,6 +74,16 @@ jQuery(document).ready(function($) {
                     previousPoint = null;            
                 }
             });
+            
+            $(chart).bind("plotclick", function(event, pos, item) {
+                var elem = element;
+                var time_el = $($(elem).find('table.data-table tr.datapoint')[item.dataIndex].children[0]).find('time')[0];
+                var time = $(time_el).attr('datetime');
+                console.log(time);
+                $(annotation_dialog).find('#id_timestamp')[0].value = time.replace('T', ' ');
+                $(annotation_dialog).dialog('open');
+            });
+            
             $(element).find('.table-wrapper').hide();
             
         }

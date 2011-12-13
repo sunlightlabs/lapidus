@@ -1,5 +1,4 @@
 from django.db import models
-from django import forms
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 from django.core.exceptions import ObjectDoesNotExist
@@ -81,11 +80,4 @@ class MetricListMembership(OrderedListItem):
 
     class Meta:
         ordering = ['order',]
-
-
-
-class DateRangeForm(forms.Form):
-    """Form for date-range searches"""
-    from_datetime = forms.DateField(widget=forms.DateInput(attrs={'class':'datefield'}))
-    to_datetime = forms.DateField(widget=forms.DateInput(attrs={'class':'datefield'}), required=False)
         

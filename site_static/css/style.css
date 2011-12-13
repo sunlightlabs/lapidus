@@ -462,6 +462,10 @@ li {
     background-image: url('/static/img/blue_arrow_down.png');
 }
 
+#annotation_dialog {
+    display: none;
+}
+
 tr.primary > th {
     border-right: 1px dashed #DCDBD6;
 }

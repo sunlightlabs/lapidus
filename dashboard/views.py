@@ -1,8 +1,9 @@
 from metrics.models import *
 from dashboard.models import *
+from dashboard.forms import *
 from django.views.generic import ListView
 from django.shortcuts import render, redirect
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotAllowed
 from django.core.urlresolvers import reverse
 from django.db.models import Q, Sum, Avg
 
@@ -29,6 +30,7 @@ def _get_projects_in_category(category_id):
 
 def get_observations(request, category='web', project=None):
     form = DateRangeForm(request.GET)
+    annotation_form = None
     ordered_units = UnitList.objects.get(default_for=CATEGORY_DICT[category]).ordered()
     latest_observation = Observation.objects.filter(metric__unit__in=ordered_units, metric__is_cumulative=False).latest('to_datetime')
     latest_datetime = latest_observation.to_datetime
@@ -59,11 +61,12 @@ def get_observations(request, category='web', project=None):
     else:
         object_list, from_datetime, to_datetime = observations_for_day(projects, ordered_units, extra_units, latest_datetime)
     form = _get_dateform(from_datetime, to_datetime)
-    
     if project:
         template = "dashboard/project_detail.html"
+        annotation_form = AnnotationForm(instance=Annotation(project=projects[0], timestamp=to_datetime))
     else:
         template = "dashboard/project_list.html"
+    
     
     return render(request, template, dictionary= { 'object_list': object_list,
                                                    'ordered_units': ordered_units,
@@ -71,7 +74,8 @@ def get_observations(request, category='web', project=None):
                                                    'to_datetime': to_datetime,
                                                    'form': form,
                                                    'latest_datetime': latest_datetime,
-                                                   'categories': CATEGORIES
+                                                   'categories': CATEGORIES,
+                                                   'annotation_form': annotation_form
                                                 })
     
 
@@ -202,3 +206,17 @@ def observations_for_daterange(projects, ordered_units, extra_units, from_dateti
         object_list.append(obj)
     
     return (object_list, from_datetime, to_datetime)
+
+def add_annotation(request):
+    # import ipdb; ipdb.set_trace()
+    if request.method == "POST":
+        form = AnnotationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponse('Annotation Saved', mimetype="text/plain")
+        else:
+            return HttpResponse('Form Invalid', mimetype="text/plain")
+    else:
+        return HttpResponseNotAllowed([['POST',]])
+        
+          
