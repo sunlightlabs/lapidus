@@ -38,4 +38,6 @@ API_MASTER_KEY = ''
 
 GA_CONFIG = os.path.join(PROJECT_ROOT, '')
 GA_EMAIL = ''
-GA_PASSWORD = '' 
+GA_PASSWORD = ''
+
+RATIOS_CONFIG = os.path.join(PROJECT_ROOT, '')

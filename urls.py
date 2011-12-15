@@ -1,6 +1,6 @@
 from django.conf.urls.defaults import *
 from django.contrib import admin
-from lapidus.metrics.resources import ProjectResource, AnnotationResource, MetricDetailResource, ObservationResource
+from lapidus.metrics.resources import ProjectResource, AnnotationResource, MetricDetailResource, MetricResource, ObservationResource
 from tastypie.api import Api
 
 admin.autodiscover()

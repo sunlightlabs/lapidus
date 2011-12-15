@@ -1,0 +1,30 @@
+{% load dashboard_filters humanize %}
+{% ifequal datap None %}
+<p class="nodata">[no data]</p>
+{% else %}
+    {% ifequal datap.metric.unit.observation_type.model "objectobservation" %}
+    <ol class="observation">{% for item in datap.objectobservation.value|slice:':5' %}
+        <li>{{ item.name|urlizetrunc:25 }}&nbsp;{% if item.value %}<span>[{{ item.value }}]</span>{% endif %}</li>{% endfor %}
+    </ol>
+    {% endifequal %}
+    {% ifequal datap.metric.unit.observation_type.model "ratioobservation" %}
+    <p class="observation" data-value="{{ datap.ratioobservation.value }}">{% spaceless %}{% ifequal datap.ratioobservation.antecedent.metric.unit.observation_unit "seconds" %}
+        {{ datap.ratioobservation.value|secondstoduration }}
+        {% else %}
+            {% ifequal datap.metric.unit.observation_unit "percentage"  %}
+            {{ datap.ratioobservation.value|percentage:2}}
+            {% else %}
+            {{ datap.ratioobservation.value|floatformat:1}}
+            {% endifequal %}
+        {% endifequal %}
+        {% endspaceless %}</p>
+    {% endifequal %}
+    {% ifequal datap.metric.unit.observation_type.model "countobservation" %}
+    <p class="observation" data-value="{{ datap.countobservation.value }}">{% spaceless %}{% ifequal datap.metric.unit.observation_unit "seconds" %}
+        {{ datap.countobservation.value|secondstoduration }}
+        {% else %}
+        {{ datap.countobservation.value|intcomma }}
+        {% endifequal %}
+    {% endspaceless %}</p>
+    {% endifequal %}
+{% endifequal %}

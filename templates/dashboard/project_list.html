@@ -1,9 +1,76 @@
-{% extends "base.html" %}
+{% extends "base.html" %}{% load dashboard_filters humanize %}
 
-{% block content %}
-    {% for p in object_list %}
-        <section id="{{ p.slug }}">
-            <h1><a href="">{{ p.name }}</a></h1>
-        </section>
-    {% endfor %}
+{% block extrahead %}
+<link rel="stylesheet" href="{{ STATIC_URL }}css/jquery-ui-1.8.16.custom.css">
+{% endblock %}
+
+{% block header %}
+<form id="pickdaterange" action="" method="get" accept-charset="utf-8">
+    <ul class="clearfix">
+        <li>
+            <label for="id_from_datetime">From</label>
+            {{ form.from_datetime }}
+        </li>
+        <li>
+            <label for="id_to_datetime">To</label>
+            {{ form.to_datetime }}
+        </li>
+        <li><input type="submit" value="Update"></li>
+    </ul>
+</form>
+<nav id="category-nav">
+    <ul class="clearfix">{% for c in categories %}
+        <li {% if forloop.last %}class="last"{% endif %}><a href="{% ifnotequal c.1 'web' %}{% url get-category-observations category=c.1 %}{% else %}{% url get-observations %}{% endifnotequal %}">{{ c.1|title }}</a></li>{% endfor %}
+    </ul>
+</nav>
+{% endblock header %}
+
+{% block content %}{% with numcols=ordered_units|length|add:"1" %}
+    <table id="analytics">
+        <thead>
+            <tr>
+                <th><span>Name</span></th>{% for u in ordered_units %}
+                <th><span>{{ u.name }}</span></th>{% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+        {% for object in object_list %}
+            <tr id="{{ object.project.slug }}" class="primary">
+                <th scope=row>
+                    <span>{{ object.project.name }}</span>
+                    <span><a href="{% url get-project-observations project=object.project.slug %}">[More]</a></span>
+                </th>
+                {% for datap in object.observations %}
+                <td class='{{ datap.metric.unit.slug }} {{ datap.metric.observation_type.model }}'>
+                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
+                </td>{% endfor %}
+            </tr>{% for datap in object.extra_observations %}
+            <tr class="secondary {% if forloop.first %}first{% endif %}">
+                <th colspan=2 scope=row>{{ datap.metric.unit.name }}</th>
+                <td class='{{ datap.metric.unit.slug }} {{ datap.metric.observation_type.model }}' colspan={{ numcols|add:"-1" }}>
+                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
+                </td>
+            </tr>{% endfor %}{% if object.annotations %}
+            <tr class="secondary">
+                <th colspan=2>Annotations</th>
+                <td colspan={{ numcols|add:"-1" }}></td>
+            </tr>{% for a in object.annotations %}
+            <tr class="secondary {% if forloop.last %}last{% endif %}">
+                <td>
+                <td colspan={{ numcols }}>
+                    <time datetime="{{ a.timestamp|date:"c" }}">{{ a.timestamp|date:"Y-m-d" }}</time>:&nbsp;<span>{{ a.text }}</span>
+                </td>
+            </tr>{% endfor %}{% endif %}
+        {% endfor %}
+        </tbody>
+    </table>{% endwith %}
+{% endblock %}
+
+{% block js %}
+    <script src="{{ STATIC_URL }}js/libs/jquery-ui-1.8.16.custom.min.js"></script>
+    <script>
+        var MAX_DATE = '{{ latest_datetime|date:"Y-m-d" }}';
+    </script>
+    <script src="{{ STATIC_URL }}js/script.js"></script>
+    <script src="{{ STATIC_URL }}js/sorttable.js"></script>
 {% endblock %}

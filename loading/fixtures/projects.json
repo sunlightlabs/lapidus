@@ -2,7 +2,6 @@
     "pk": 2,
     "model": "metrics.project",
     "fields": {
-        "api_key": "cd6f5b0b1ed649aba38a84202ac6f85d",
         "name": "Influence Explorer",
         "slug": "influence-explorer"
     }
@@ -11,7 +10,6 @@
     "pk": 3,
     "model": "metrics.project",
     "fields": {
-        "api_key": "8a574d8dc116447d8f2fda3801dd1515",
         "name": "Poligraft",
         "slug": "poligraft"
     }
@@ -20,7 +18,6 @@
     "pk": 4,
     "model": "metrics.project",
     "fields": {
-        "api_key": "85d9ad399f114f3f901eee5f7699a55b",
         "name": "Politiwidgets",
         "slug": "politiwidgets"
     }
@@ -29,7 +26,6 @@
     "pk": 1,
     "model": "metrics.project",
     "fields": {
-        "api_key": "dedb8f63a796476eb371628dc42268c6",
         "name": "Sunlight Foundation",
         "slug": "sunlight-foundation"
     }
@@ -38,7 +34,6 @@
     "pk": 5,
     "model": "metrics.project",
     "fields": {
-        "api_key": "904a4eb89a734bbea2b046895903aeb6",
         "name": "Sunlight Live",
         "slug": "sunlight-live"
     }

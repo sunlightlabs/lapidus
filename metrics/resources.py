@@ -1,9 +1,9 @@
 from django.conf import settings
-from lapidus.metrics.models import Unit, Project, Annotation, Metric, Observation
+from lapidus.metrics.models import Unit, Project, Annotation, Metric, Observation, RatioObservation
 from tastypie import fields
 from tastypie.authentication import Authentication
 from tastypie.authorization import Authorization
-from tastypie.http import HttpCreated
+from tastypie.http import HttpCreated, HttpNotImplemented
 from tastypie.resources import ModelResource
 import iso8601
 
@@ -81,7 +81,6 @@ class AnnotationResource(ModelResource):
         resource_name = 'annotation'
 
 class MetricResource(ModelResource):
-    
     project = fields.ForeignKey(ProjectResource, 'project')
     
     class Meta:
@@ -90,38 +89,56 @@ class MetricResource(ModelResource):
         queryset = Metric.objects.all()
         resource_name = 'metric'
     
+    def dehydrate(self, bundle):
+        bundle.data['metric_name'] = bundle.obj.__unicode__()
+        bundle.data['observation_class'] = bundle.obj.unit.observation_type.model
+        return bundle
+    
     def post_detail(self, request, **kwargs):
         pk = kwargs['pk'].strip("/")
         metric = Metric.objects.get(pk=pk)
-        from_dt = iso8601.parse_date(request.POST['from_datetime']).replace(tzinfo=None)
-        to_dt = iso8601.parse_date(request.POST['to_datetime']).replace(tzinfo=None)
-        try:
-            ob = Observation.objects.get(
-                metric = metric,
-                from_datetime = from_dt,
-                to_datetime = to_dt,
-            )
-        except Observation.DoesNotExist:
-            ob = Observation.objects.create(
-                metric = metric,
-                from_datetime = from_dt,
-                to_datetime = to_dt,
-            )
-        ob.value = request.POST.get('value', None)
-        ob.payload = request.POST.get('payload', '')
-        ob.save()
-        url = "/observation/%s/" % ob.pk
-        return HttpCreated(location=url)
-
-class MetricDetailResource(MetricResource):
-    def dehydrate(self, bundle):
-        bundle.data['observations'] = [ObservationResource().full_dehydrate(ob) for ob in bundle.obj.observations.all()]
-        return bundle
+        obs_class = metric.unit.observation_type.model_class()
+        if obs_class is RatioObservation:
+            return HttpNotImplemented()
+        else:
+            from_dt = iso8601.parse_date(request.POST['from_datetime']).replace(tzinfo=None)
+            to_dt = iso8601.parse_date(request.POST['to_datetime']).replace(tzinfo=None)
+            metric_obs = metric.related_observations
+            try:
+                ob = metric_obs.get(
+                    metric = metric,
+                    from_datetime = from_dt,
+                    to_datetime = to_dt,
+                )
+            except obs_class.DoesNotExist:
+                ob = obs_class.objects.create(
+                    metric = metric,
+                    from_datetime = from_dt,
+                    to_datetime = to_dt,
+                )
+            rawvalue = request.POST.get('value', None)
+            ob.value = self.deserialize(request, rawvalue)
+            ob.save()
+            url = "/observation/%s/" % ob.pk
+            return HttpCreated(location=url)
 
 class ObservationResource(ModelResource):
     metric = fields.ForeignKey(MetricResource, 'metric')
+
+    def dehydrate(self, bundle):
+        try:
+            bundle.data.update({'value': bundle.obj.value})
+        except:
+            pass
+        return bundle
+        
+    
     class Meta:
         authentication = KeyAuthentication()
         authorization = ProjectAuthorization()
         queryset = Observation.objects.all()
         resource_name = 'observation'
+
+class MetricDetailResource(MetricResource):
+    observations = fields.ToManyField(ObservationResource, 'related_observations', null=True, full=True)
+
