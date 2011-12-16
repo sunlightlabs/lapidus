@@ -3,4 +3,5 @@ django-tastypie>=0.9.10
 django-extensions==0.8-pre
 iso8601plus
 validictory
+gunicorn=0.12.2
 -e git://github.com/clintecker/python-googleanalytics.git#egg=python-googleanalytics
