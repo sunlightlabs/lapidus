@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponseNotAllowed
 from django.core.urlresolvers import reverse
 from django.db.models import Q, Sum, Avg
+from django.http import Http404
 
 import datetime, calendar
 
@@ -17,7 +18,10 @@ import logging
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
-CATEGORY_DICT = { v: k for k,v in CATEGORIES }
+# CATEGORY_DICT = { v: k for k,v in CATEGORIES }
+CATEGORY_DICT = {}
+for v, k in CATEGORIES:
+    CATEGORY_DICT[k] = v
 
 def _get_dateform(from_datetime, to_datetime):
     return DateRangeForm(initial={'from_datetime': from_datetime, 'to_datetime': to_datetime})
@@ -25,15 +29,24 @@ def _get_dateform(from_datetime, to_datetime):
 def _get_projects_in_category(category_id):
     """Retrieve all projects that have a web metric"""
     projects = Project.objects.all()
-    cat_metrics_ids = [wm.id for wm in Metric.objects.filter(unit__category=category_id) if wm.related_observations.count() != 0]
-    return [ p for p in projects if Metric.objects.filter(project=p, id__in=cat_metrics_ids).exists() ]
+    try:
+        cat_metrics_ids = [wm.id for wm in Metric.objects.filter(unit__category=category_id) if wm.related_observations.count() != 0]
+        return [ p for p in projects if Metric.objects.filter(project=p, id__in=cat_metrics_ids).exists() ]
+    except Exception, e:
+        return None
 
 def get_observations(request, category='web', project=None):
     form = DateRangeForm(request.GET)
     annotation_form = None
-    ordered_units = UnitList.objects.get(default_for=CATEGORY_DICT[category]).ordered()
-    latest_observation = Observation.objects.filter(metric__unit__in=ordered_units, metric__is_cumulative=False).latest('to_datetime')
-    latest_datetime = latest_observation.to_datetime
+    try:
+        ordered_units = UnitList.objects.get(default_for=CATEGORY_DICT[category]).ordered()
+    except Exception, e:
+        ordered_units = Unit.objects.filter(category=CATEGORY_DICT[category])
+    try:
+        latest_observation = Observation.objects.filter(metric__unit__in=ordered_units, metric__is_cumulative=False).latest('to_datetime')
+        latest_datetime = latest_observation.to_datetime
+    except Exception, e:
+        latest_observation = None
     
     extra_units = Unit.objects.select_related().filter(category=CATEGORY_DICT[category]).exclude(id__in=[u.id for u in ordered_units])
     
@@ -41,6 +54,9 @@ def get_observations(request, category='web', project=None):
         projects = [Project.objects.get(slug=project)]
     else:
         projects = _get_projects_in_category(CATEGORY_DICT[category])
+    
+    if not projects:
+        raise Http404
     
     if form.is_valid():
         raw_from_date = form.cleaned_data.get('from_datetime', None)
