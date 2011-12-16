@@ -61,16 +61,19 @@ class ProjectAuthorization(Authorization):
 #
 
 class ProjectResource(ModelResource):
+    metrics = fields.ToManyField('lapidus.metrics.resources.MetricResource', 'metrics', null=True, full=True)
+    annotations = fields.ToManyField('lapidus.metrics.resources.AnnotationResource', 'annotations', null=True, full=True)
+    
     class Meta:
         authentication = KeyAuthentication()
         authorization = ProjectAuthorization()
         queryset = Project.objects.all()
         resource_name = 'project'
     
-    def dehydrate(self, bundle):
-        bundle.data['metrics'] = [MetricResource().full_dehydrate(m) for m in bundle.obj.metrics.all()]
-        bundle.data['annotations'] = [AnnotationResource().full_dehydrate(a) for a in bundle.obj.annotations.all()]
-        return bundle
+    # def dehydrate(self, bundle):
+    #     bundle.data['metrics'] = [MetricResource().full_dehydrate(m) for m in bundle.obj.metrics.all()]
+    #     bundle.data['annotations'] = [AnnotationResource().full_dehydrate(a) for a in bundle.obj.annotations.all()]
+    #     return bundle
 
 class AnnotationResource(ModelResource):
     project = fields.ForeignKey(ProjectResource, 'project')
@@ -141,4 +144,7 @@ class ObservationResource(ModelResource):
 
 class MetricDetailResource(MetricResource):
     observations = fields.ToManyField(ObservationResource, 'related_observations', null=True, full=True)
-
+    
+    # class Meta:
+    #     resource_name = 'metric_detail'
+    
