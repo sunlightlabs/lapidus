@@ -70,6 +70,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'django.contrib.humanize',
     'tastypie',
+    'gunicorn',
     'django_extensions',
     'lapidus.metrics',
     'lapidus.dashboard',
