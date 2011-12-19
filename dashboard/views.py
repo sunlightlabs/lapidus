@@ -65,7 +65,7 @@ def get_observations(request, category='web', project=None):
         to_datetime = datetime.datetime.combine(raw_to_date,  datetime.time(23, 59, 59)) if raw_to_date else raw_to_date
         if from_datetime and to_datetime:
             if from_datetime.date() == to_datetime.date():
-                return HttpResponseRedirect("{0}?{1}".format(reverse('get-observations'), "from_datetime={}".format(from_datetime.date())))
+                return HttpResponseRedirect("{0}?{1}".format(reverse('get-observations'), "from_datetime={0}".format(from_datetime.date())))
             else:
                 object_list, from_datetime, to_datetime = observations_for_daterange(   projects, 
                                                                                         ordered_units, 
