@@ -50,25 +50,29 @@ class Command(BaseCommand):
             fbid = urlunsplit( (spliturl.scheme, spliturl.netloc, cleanpath, spliturl.query, spliturl.fragment) )
             proj_by_fbid[fbid] = p
         # Make a single request for all of the data points
-        url_str = ','.join([key for key in proj_by_fbid.iterkeys()])
+        # url_str = ','.join([key for key in proj_by_fbid.iterkeys()])
+        url_list = ','.join(['"{0}"'.format(proj.url) for proj in projects])
+        fql_query = 'SELECT url, normalized_url, total_count  FROM link_stat WHERE url IN ({0})'.format(url_list)
         if verbosity >= 2:
-            self.stdout.write('url_str: {url_str}\n'.format(url_str=url_str))
-        params = urlencode({'ids': url_str})
-        fp = urlopen("{base_url}?{params}".format(base_url=FACEBOOK_GRAPH_URL, params=params))
+            self.stdout.write('fql_query: {fql_query}\n'.format(fql_query=fql_query))
+        params = urlencode({'q': fql_query})
+        fp = urlopen("{base_url}fql/?{params}".format(base_url=FACEBOOK_GRAPH_URL, params=params))
         results = json.load(fp)
         # Process results back out to their respective projects
-        for r in results.itervalues():
-            proj = proj_by_fbid[r['id']]
+        for result in results['data']:
+            # result = results[res_key]
+            proj = projects.get(url=result['url'])
             (metric, metric_created) = Metric.objects.get_or_create(unit=unit, project=proj, is_cumulative=FACEBOOK_METRIC["cumulative"])
-            (observation, observation_created) = observation_class.objects.get_or_create(    metric=metric, 
-                                                from_datetime=datetime.datetime.now(), 
-                                                to_datetime=datetime.datetime.now(),
-                                                value=r['shares']
-                                            )
-            self.stdout.write("{project}'s {unit} for {datetime}: {obs}\n".format(
-                project=proj.name,
-                unit=unit.name,
-                datetime=observation.from_datetime,
-                obs=repr(observation)
-            ))
+            if result.get('total_count'):
+                (observation, observation_created) = observation_class.objects.get_or_create(    metric=metric, 
+                                                    from_datetime=datetime.datetime.now(), 
+                                                    to_datetime=datetime.datetime.now(),
+                                                    value=result['total_count']
+                                                )
+                self.stdout.write("{project}'s {unit} for {datetime}: {obs}\n".format(
+                    project=proj.name,
+                    unit=unit.name,
+                    datetime=observation.from_datetime,
+                    obs=repr(observation)
+                ))
         

@@ -20,7 +20,7 @@ class BaseOrderedList(models.Model):
         return "List: {name}".format(name=self.name)
     
     def save(self):
-        if self.default:
+        if hasattr(self, 'default'):
             try:
                 obj = self.__class__.objects.get(default=True)
                 if self != obj:
