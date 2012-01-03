@@ -7,7 +7,9 @@ from django.db.models import Q
 # from django.contrib.contenttypes.models import ContentType
 from googleanalytics import Connection
 from lapidus.metrics.models import Project, Metric, Unit, CountObservation, RatioObservation, UNIT_TYPES, CATEGORIES, PERIODS
-# import datetime
+
+from datetime import timedelta
+
 import json
 
 # Unit.name, slug, category, period, observation_type, observation_unit (UNIT_TYPES)
@@ -41,6 +43,10 @@ class Command(BaseCommand):
         for proj in applicable_projs:
             m = Metric.objects.create(project=proj, unit=u)
         
+    def _find_missing_dates(self, input_dates):
+        input_dates = list(input_dates)
+        date_set = set(input_dates[0]+timedelta(x) for x in range((input_dates[-1]-input_dates[0]).days))
+        return sorted(date_set-set(input_dates))
 
     def handle(self, *args, **options):
         verbosity = int(options.get('verbosity'))
@@ -80,11 +86,15 @@ class Command(BaseCommand):
                     self.stderr.write("Skipping '{metric}' on {project}\n".format(metric=ratio['antecedent'], project=project))
                     continue
                 ratio_metric = Metric.objects.get(project=project, unit=u) # We already searched for it then created it
-                antecedent_class = antecedent_metric.unit.observation_type.model_class()
-                consequent_class = consequent_metric.unit.observation_type.model_class()
+                # antecedent_class = antecedent_metric.unit.observation_type.model_class()
+                # consequent_class = consequent_metric.unit.observation_type.model_class()
                 
-                antecedent_observations = antecedent_class.objects.filter(metric=antecedent_metric).order_by('from_datetime', 'to_datetime')
-                consequent_observations = consequent_class.objects.filter(metric=consequent_metric).order_by('from_datetime', 'to_datetime')
+                existing_ratio_obs_dates = ratio_metric.related_observations.order_by('from_datetime', 'to_datetime').dates('to_datetime', 'day')
+                antecedent_observations = antecedent_metric.related_observations.order_by('from_datetime', 'to_datetime')
+                antecedent_obs_dates = antecedent_observations.dates('to_datetime', 'day')
+                missing_dates = list(set(ao for ao in antecedent_obs_dates).difference(ro for ro in existing_ratio_obs_dates))
+                antecedent_observations = antecedent_metric.related_observations.filter(from_datetime__in=missing_dates)
+                consequent_observations = consequent_metric.related_observations.filter(from_datetime__in=missing_dates)
                 # FIXME This doesn't calculate new ratioobservations for each time frame...
                 for a_obs in antecedent_observations:
                     if verbosity >= 2:
