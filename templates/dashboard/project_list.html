@@ -44,13 +44,13 @@
                 <td class='{{ datap.metric.unit.slug }} {{ datap.metric.observation_type.model }}'>
                     {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
                 </td>{% endfor %}
-            </tr>{% for datap in object.extra_observations %}
+            </tr>{% for datap in object.extra_observations %}{% if datap %}
             <tr class="secondary {% if forloop.first %}first{% endif %}">
                 <th colspan=2 scope=row>{{ datap.metric.unit.name }}</th>
                 <td class='{{ datap.metric.unit.slug }} {{ datap.metric.observation_type.model }}' colspan={{ numcols|add:"-1" }}>
                     {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
                 </td>
-            </tr>{% endfor %}{% if object.annotations %}
+            </tr>{% endif %}{% endfor %}{% if object.annotations %}
             <tr class="secondary">
                 <th colspan=2>Annotations</th>
                 <td colspan={{ numcols|add:"-1" }}></td>

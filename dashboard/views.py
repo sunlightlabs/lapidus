@@ -134,7 +134,8 @@ def observations_for_day(projects, ordered_units, extra_units, day_datetime):
                     logger.debug("No observation for {unit}".format(unit=extra_unit))
                     obj['extra_observations'].append(None)
             except Exception, e:
-                obj['extra_observations'].append(None)
+                logger.debug("No metric for {unit} in {project}".format(unit=extra_unit, project=project.name))
+                # obj['extra_observations'].append(None)
         obj['annotations'] = Annotation.objects.filter(project=project).order_by('-timestamp')
         object_list.append(obj)
     
