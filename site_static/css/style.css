@@ -392,6 +392,10 @@ table.data-table td {
     padding: 3px 12px;
 }
 
+#analytics .secondary th {
+    vertical-align: top;
+}
+
 .secondary.first td, .secondary.first th {
     padding-top: 12px;
 }

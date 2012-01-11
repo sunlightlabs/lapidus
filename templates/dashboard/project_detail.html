@@ -7,14 +7,14 @@
     <thead>
         <tr>
             {% for datap in object.observations %}
-            <th><span><a href="#{{ datap.metric.unit.slug }}">{{ datap.metric.unit.name }}</a></span></th>{% endfor %}
+            <th><span>{% if "observations" in datap %}<a href="#{{ datap.metric.unit.slug }}">{{ datap.metric.unit.name }}</a>{% else %}{{ datap.metric.unit.name }}{% endif %}</span></th>{% endfor %}
             {% if object.annotations %}<th><span><a href="#annotations">Annotations</a></span></th>{% endif %}
         </tr>
     </thead>
     <tbody>
         <tr>{% for datap in object.observations %}
             <td class='{{ datap.metric.unit.slug }} {{ datap.metric.unit.observation_type.model }}'>
-                {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
+                {% if datap %}{% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}{% else %}&nbsp;{% endif %}
             </td>{% endfor %}
             <td>&nbsp;</td>
         </tr>
