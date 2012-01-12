@@ -19,8 +19,10 @@
     </ul>
 </form>
 <nav id="category-nav">
-    <ul class="clearfix">{% for c in categories %}
-        <li {% if forloop.last %}class="last"{% endif %}><a href="{% ifnotequal c.1 'web' %}{% url get-category-observations category=c.1 %}{% else %}{% url get-observations %}{% endifnotequal %}">{{ c.1|title }}</a></li>{% endfor %}
+    <ul class="clearfix">{# {% for c in categories %} #}
+        {# <li {% if forloop.last %}class="last"{% endif %}><a href="{% ifnotequal c.1 'web' %}{% url get-category-observations category=c.1 %}{% else %}{% url get-observations %}{% endifnotequal %}">{{ c.1|title }}</a></li>{% endfor %} #}
+        <li><a href='{% url get-observations %}'>Web</a></li>
+        <li><a href='{% url get-category-observations category="api" %}'>API</a></li>
     </ul>
 </nav>
 {% endblock header %}
