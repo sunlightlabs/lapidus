@@ -93,7 +93,6 @@ class Command(BaseCommand):
                             metrics = config['defaults'].copy()['metrics']
                         
                         
-                        import ipdb; ipdb.set_trace()
                         for metric in metrics:
                             # Check for existence of Unit and Metric and create if needed.
                             try:
