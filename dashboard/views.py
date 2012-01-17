@@ -115,12 +115,20 @@ def observations_for_day(projects, ordered_units, extra_units, from_datetime):
             logger.debug('unit in unitcol is {unit}'.format(unit=ordered_unit.slug))
             try:
                 metric = Metric.objects.get(project=project, unit=ordered_unit)
-                try:
-                    proj_obs = metric.related_observations.filter(to_datetime__lte=to_datetime, from_datetime__gte=from_datetime).latest('to_datetime')
-                    obj['observations'].append(proj_obs)
-                except Exception, e:
-                    logger.debug("No observation for {unit}".format(unit=ordered_unit))
-                    obj['observations'].append(None)
+                if metric.is_cumulative:
+                    try:
+                        proj_obs = metric.related_observations.filter(to_datetime__lte=to_datetime).latest('to_datetime')
+                        obj['observations'].append(proj_obs)
+                    except Exception, e:
+                        logger.debug("No observation for {unit}".format(unit=ordered_unit))
+                        obj['observations'].append(None)
+                else:
+                    try:
+                        proj_obs = metric.related_observations.filter(to_datetime__lte=to_datetime, from_datetime__gte=from_datetime).latest('to_datetime')
+                        obj['observations'].append(proj_obs)
+                    except Exception, e:
+                        logger.debug("No observation for {unit}".format(unit=ordered_unit))
+                        obj['observations'].append(None)
             except Exception, e:
                 obj['observations'].append(None)
         for extra_unit in extra_units:
