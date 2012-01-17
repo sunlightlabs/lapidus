@@ -1,10 +1,11 @@
 {% load dashboard_filters humanize %}
+{% with slice_val=list_slice|default:":5" %}
 {% ifequal datap None %}
 <p class="nodata">[no data]</p>
 {% else %}
     {% ifequal datap.metric.unit.observation_type.model "objectobservation" %}
-    <ol class="observation">{% for item in datap.objectobservation.value|slice:':5' %}
-        <li>{{ item.name|urlizetrunc:25 }}&nbsp;{% if item.value %}<span>[{{ item.value }}]</span>{% endif %}</li>{% endfor %}
+    <ol class="observation">{% for item in datap.objectobservation.value|slice:slice_val %}
+        <li {% if forloop.last %}class="last"{% endif %}>{{ item.name|urlizetrunc:25 }}&nbsp;{% if item.value %}<span>[{{ item.value }}]</span>{% endif %}</li>{% endfor %}
     </ol>
     {% endifequal %}
     {% ifequal datap.metric.unit.observation_type.model "ratioobservation" %}
@@ -28,3 +29,4 @@
     {% endspaceless %}</p>
     {% endifequal %}
 {% endifequal %}
+{% endwith %}

@@ -50,7 +50,7 @@
             <tr class="secondary {% if forloop.first %}first{% endif %}">
                 <th colspan=2 scope=row>{{ datap.metric.unit.name }}</th>
                 <td class='{{ datap.metric.unit.slug }} {{ datap.metric.observation_type.model }}' colspan={{ numcols|add:"-1" }}>
-                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
+                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" with list_slice=":10" %}{% endspaceless %}
                 </td>
             </tr>{% endif %}{% endfor %}{% if object.annotations %}
             <tr class="secondary">

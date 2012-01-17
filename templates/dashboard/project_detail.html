@@ -54,7 +54,7 @@
             <tr class="datapoint">
                 <td><time data-milliseconds="{{ sub_datap.to_datetime|datetime_to_ms }}" datetime="{{ sub_datap.to_datetime|date:'c' }}">{{ sub_datap.to_datetime|date:'M d, Y' }}</time></td>
                 <td>
-                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" with datap=sub_datap %}{% endspaceless %}
+                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" with datap=sub_datap list_slice=":20" %}{% endspaceless %}
                 </td>
             </tr>{% endfor %}
         </table>        
