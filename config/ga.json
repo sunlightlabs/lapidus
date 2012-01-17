@@ -36,7 +36,7 @@
                 "metrics": ["visitors"],
                 "dimensions": ["source"],
                 "type": "list",
-                "maxResults": 5
+                "maxResults": 20
             }
         ]
     },
@@ -51,7 +51,17 @@
         },
         {
             "slug": "influence-explorer",
-            "profile_id": "35455102"
+            "profile_id": "35455102",
+            "metrics": [
+                {
+                    "name": "Top pages",
+                    "metrics": ["pageviews"],
+                    "dimensions": ["pagePath"],
+                    "type": "list",
+                    "maxResults": 20
+                }
+            ]
+            
         },
         {
             "slug": "poligraft",
