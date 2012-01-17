@@ -44,7 +44,7 @@ def get_observations(request, category='web', project=None):
         ordered_units = Unit.objects.filter(category=CATEGORY_DICT[category])
     try:
         latest_observation = Observation.objects.filter(metric__unit__in=ordered_units, metric__is_cumulative=False).latest('to_datetime')
-        latest_datetime = latest_observation.to_datetime
+        latest_from_datetime = latest_observation.from_datetime
     except Exception, e:
         latest_observation = None
     
@@ -62,7 +62,7 @@ def get_observations(request, category='web', project=None):
         raw_from_date = form.cleaned_data.get('from_datetime', None)
         from_datetime = datetime.datetime.combine(raw_from_date, datetime.time(0, 0, 0))
         raw_to_date = form.cleaned_data.get('to_datetime', None)
-        to_datetime = datetime.datetime.combine(raw_to_date,  datetime.time(23, 59, 59)) if raw_to_date else raw_to_date
+        to_datetime = datetime.datetime.combine(raw_to_date,  datetime.time(23, 59, 59)) if raw_to_date else None
         if from_datetime and to_datetime:
             if from_datetime.date() == to_datetime.date():
                 return HttpResponseRedirect("{0}?{1}".format(reverse('get-observations'), "from_datetime={0}".format(from_datetime.date())))
@@ -75,7 +75,7 @@ def get_observations(request, category='web', project=None):
         elif from_datetime:
             object_list, from_datetime, to_datetime = observations_for_day(projects, ordered_units, extra_units, from_datetime)
     else:
-        object_list, from_datetime, to_datetime = observations_for_day(projects, ordered_units, extra_units, latest_datetime)
+        object_list, from_datetime, to_datetime = observations_for_day(projects, ordered_units, extra_units, latest_from_datetime)
     form = _get_dateform(from_datetime, to_datetime)
     if project:
         template = "dashboard/project_detail.html"
@@ -89,19 +89,18 @@ def get_observations(request, category='web', project=None):
                                                    'from_datetime': from_datetime,
                                                    'to_datetime': to_datetime,
                                                    'form': form,
-                                                   'latest_datetime': latest_datetime,
+                                                   'latest_datetime': latest_from_datetime,
                                                    'categories': CATEGORIES,
                                                    'annotation_form': annotation_form
                                                 })
     
 
 
-def observations_for_day(projects, ordered_units, extra_units, day_datetime):
+def observations_for_day(projects, ordered_units, extra_units, from_datetime):
     """View for displaying a set of metric observations across all projects"""
     
-    logger.debug('Requested for {month} {day} {year}'.format(month=day_datetime.month, day=day_datetime.day, year=day_datetime.year))
-    from_datetime = day_datetime
-    to_datetime = datetime.datetime(int(day_datetime.year), int(day_datetime.month), int(day_datetime.day), 23, 59, 59)
+    logger.debug('Requested for {month} {day} {year}'.format(month=from_datetime.month, day=from_datetime.day, year=from_datetime.year))
+    to_datetime = datetime.datetime.combine(from_datetime,  datetime.time(23, 59, 59))
         
     object_list = []
     
@@ -116,19 +115,27 @@ def observations_for_day(projects, ordered_units, extra_units, day_datetime):
             logger.debug('unit in unitcol is {unit}'.format(unit=ordered_unit.slug))
             try:
                 metric = Metric.objects.get(project=project, unit=ordered_unit)
-                try:
-                    proj_obs = metric.related_observations.latest('to_datetime')
-                    obj['observations'].append(proj_obs)
-                except Exception, e:
-                    logger.debug("No observation for {unit}".format(unit=ordered_unit))
-                    obj['observations'].append(None)
+                if metric.is_cumulative:
+                    try:
+                        proj_obs = metric.related_observations.filter(to_datetime__lte=to_datetime).latest('to_datetime')
+                        obj['observations'].append(proj_obs)
+                    except Exception, e:
+                        logger.debug("No observation for {unit}".format(unit=ordered_unit))
+                        obj['observations'].append(None)
+                else:
+                    try:
+                        proj_obs = metric.related_observations.filter(to_datetime__lte=to_datetime, from_datetime__gte=from_datetime).latest('to_datetime')
+                        obj['observations'].append(proj_obs)
+                    except Exception, e:
+                        logger.debug("No observation for {unit}".format(unit=ordered_unit))
+                        obj['observations'].append(None)
             except Exception, e:
                 obj['observations'].append(None)
         for extra_unit in extra_units:
             try:
                 metric = Metric.objects.get(project=project, unit=extra_unit)
                 try:
-                    proj_obs = metric.related_observations.latest('to_datetime')
+                    proj_obs = metric.related_observations.filter(to_datetime__lte=to_datetime, from_datetime__gte=from_datetime).latest('to_datetime')
                     obj['extra_observations'].append(proj_obs)
                 except Exception, e:
                     logger.debug("No observation for {unit}".format(unit=extra_unit))

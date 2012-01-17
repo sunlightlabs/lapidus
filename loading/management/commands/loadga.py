@@ -4,6 +4,8 @@ from django.template.defaultfilters import slugify
 from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.contrib.contenttypes.models import ContentType
+from optparse import make_option
+
 from googleanalytics import Connection
 from lapidus.metrics.models import Project, Metric, Unit, CountObservation, ObjectObservation, UNIT_TYPES
 import datetime
@@ -14,6 +16,12 @@ from decimal import Decimal, InvalidOperation, ROUND_HALF_UP
 DATE_FORMAT = "%Y-%m-%d"
 
 class Command(BaseCommand):
+    option_list = BaseCommand.option_list + (
+        make_option('--config',
+            dest='configfile',
+            default=None,
+            help='Load data from an alternate config file. Good for testing.'),
+    )
     help = 'Load stats from Google Analytics. Defaults to latest available (yesterday), but can be given a particular date or a date range'
     args = '[from_date] [to_date]'
     
@@ -33,6 +41,7 @@ class Command(BaseCommand):
     
     def handle(self, *args, **options):
         verbosity = int(options.get('verbosity'))
+        configfile = options.get('configfile')
         
         if len(args):
             from_date = datetime.datetime.strptime(args[0], DATE_FORMAT)
@@ -54,7 +63,13 @@ class Command(BaseCommand):
         if datedelta:
             dates += [from_date + datetime.timedelta(days=r) for r in range(1, datedelta.days+1)]
         
-        config = json.load(open(settings.GA_CONFIG))
+        if configfile:
+            try:
+                config = json.load(open(configfile, 'r'))
+            except Exception, e:
+                raise CommandError( "Couldn't parse configfile '{0}'. Make sure it exists and is the correct format.\n".format(configfile) )
+        else:
+            config = json.load(open(settings.GA_CONFIG, 'r'))
         conn = Connection(settings.GA_EMAIL, settings.GA_PASSWORD)
         
         for aday in dates:
@@ -63,7 +78,7 @@ class Command(BaseCommand):
             
             
             for project in config['projects']:
-            
+                metrics = None
                 try:
                     p = Project.objects.get(slug=project['slug'])
                     self.stdout.write("Fetching data for '{project}' on {date:%Y-%m-%d}\n".format(date=aday, project=p.name))
@@ -72,10 +87,13 @@ class Command(BaseCommand):
                     
                         acct = conn.get_account(project['profile_id']) # profile_id
                     
-                        metrics = config['defaults']['metrics']
                         if project.get('metrics'):
-                            metrics += project.get('metrics')
-                    
+                            metrics = config['defaults'].copy()['metrics'] + project.get('metrics')
+                        else:
+                            metrics = config['defaults'].copy()['metrics']
+                        
+                        
+                        import ipdb; ipdb.set_trace()
                         for metric in metrics:
                             # Check for existence of Unit and Metric and create if needed.
                             try:
@@ -95,12 +113,17 @@ class Command(BaseCommand):
                             (m, m_created) = p.metrics.get_or_create(project=p, unit=u)
                             if verbosity >= 2:
                                 self.stdout.write('Metric "{name}" of type "{content_type}" for "{project}"\n'.format(name=u.name, project=p.name, content_type=u.observation_unit))
-                        
+                            
+                            maxresults = 50
+                            if metric.get('maxResults'):
+                                maxresults = metric.get('maxResults')
+                            
                             data = acct.get_data(
                                 start_date=start.date(),
                                 end_date=end.date(),
                                 metrics=metric['metrics'],
-                                dimensions=metric.get('dimensions', None)
+                                dimensions=metric.get('dimensions', None),
+                                max_results=maxresults
                             )
                             if verbosity >= 2:
                                 self.stdout.write("data len is {0}\n".format(len(data)))
@@ -128,6 +151,6 @@ class Command(BaseCommand):
                                 if verbosity >= 2:
                                     self.stdout.write('Observation for metric "{0}" at "{1}" with value:\n{2}\n'.format(u.name, start, o.value))
                                 self._save_object(o)
-            
                 except Project.DoesNotExist:
                     raise CommandError( "{0} project is not found".format(project['slug']) )
+                del(metrics)

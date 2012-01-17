@@ -355,6 +355,25 @@ p.observation {
     font-size: 180%;
 }
 
+ol.observation > li {
+    padding-bottom: 3px;
+    margin-bottom: 2px;
+    border-bottom: 1px dashed #E9E9E9;
+}
+
+ol.observation > li.last {
+    margin-bottom: 0;
+    border-bottom: none;
+}
+
+ol.observation > li span {
+    float: right;
+}
+
+.secondary ol.observation {
+    width: 50%;
+}
+
 .secondary th {
     cursor: auto;
     width: auto;
