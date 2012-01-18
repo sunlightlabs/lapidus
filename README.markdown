@@ -22,20 +22,22 @@ A **loadfacebook** command retrieves the *total\_count* for Facebook shares, lik
 
 This contains all of the logic for the front-end display of the data.
 
-The templates reside in the project-level templates directory rather than in an app-level templates directory. The `_render_observation.html` template may be of interest as it does the work of properly rendering an observation based on it's class and .unit\_type.
+The templates reside in the project-level templates directory rather than in an app-level templates directory. The `_render_observation.html` template may be of interest as it does the work of properly rendering an observation based on it's class and .unit\_type. Additionally, there is a `_render_observation_value.html` that attempts to output the value without html formatting. This one doesn't attempt to handle ObjectObservations.
 
 
 ## Installation ##
 
-This is not a packaged application. Fork the code, or download a tag, and set up as you would a Django project. You can `pip install -r requirements.txt` for your python environment. 
+This is not a packaged application. Fork the code, or download a tag, and set up as you would a Django project. You can `pip install -r requirements.txt` for your python environment.
 
 ## Configuration & Getting Started ##
 
-Copy local\_settings.example.py to local\_settings.py and customize to your system. This project has been developed against PostgreSQL, but doesn't contain any PostgreSQL-specific optimizations.
+Copy `local_settings.example.py` to `local_settings.py` and customize to your system. This project has been developed against PostgreSQL, but doesn't contain any PostgreSQL-specific optimizations. Additionally, `gunicorn` is listed in installed apps, so if you aren't using `gunicorn`, you should comment that out.
 
 `GA_EMAIL`, `GA_PASSWORD`, and `GA_CONFIG` allow you to connect your copy of lapidus to your Google Analytics account and projects. There is a default `config/ga.json` included, but you will need to edit the project slugs and GA profile ids to match your GA projects. 
 
-You may also want to edit `config/ratios.json` for additional ratios you want to calculate and connect it using the `RATIOS_CONFIG` setting. 
+You may also want to edit `config/ratios.json` for additional ratios you want to calculate and connect it using the `RATIOS_CONFIG` setting.
+
+The `UNIT_COMPARE_PAST` tuple allows you to determine what units will render a color indicator when comparing one date range to the same timedelta immediately before it. Basically this was put in so we could visually indicate whether a 'visits' metric increased or decreased from the previous period. This will work with other CountObservations and RatioObservations, but not ObjectObservations.
 
 Once you have your database created and GA configured, you can start populating lapidus with Projects and Units, and then you can create metrics. The **loadga** command will create units and metrics for projects as defined in `config/ga.json`, but you must create the Project records before you can run that command.
 
