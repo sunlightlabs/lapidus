@@ -131,6 +131,21 @@ class Observation(models.Model):
     from_datetime = models.DateTimeField()
     to_datetime = models.DateTimeField()
     
+    def _get_datapoint(self):
+        if self.value:
+            return self.value
+        return None
+    
+    data = property(_get_datapoint)
+    
+    def _get_observationtype(self):
+        if self.metric:
+            if self.metric.unit:
+                return self.metric.unit.observation_type.model
+            return None
+        return None
+    observation_type = property(_get_observationtype)
+    
     class Meta:
         ordering = ('-from_datetime',)
 

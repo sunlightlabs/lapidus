@@ -1,0 +1,22 @@
+{% load dashboard_filters humanize %}
+{% with slice_val=list_slice|default:":5" %}{% spaceless %}
+{% ifequal datap.observation_type "objectobservation" %}{{ datap.data }}{% endifequal %}
+{% ifequal datap.observation_type "ratioobservation" %}
+    {% ifequal datap.antecedent.metric.unit.observation_unit "seconds" %}
+    {{ datap.data|secondstoduration }}
+    {% else %}
+        {% ifequal datap.metric.unit.observation_unit "percentage"  %}
+        {{ datap.data|percentage:2}}
+        {% else %}
+        {{ datap.data|floatformat:1}}
+        {% endifequal %}
+    {% endifequal %}
+{% endifequal %}
+{% ifequal datap.observation_type "countobservation" %}
+    {% ifequal datap.metric.unit.observation_unit "seconds" %}
+    {{ datap.data|secondstoduration }}
+    {% else %}
+    {{ datap.data|intcomma }}
+    {% endifequal %}
+{% endifequal %}
+{% endspaceless %}{% endwith %}

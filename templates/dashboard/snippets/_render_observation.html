@@ -3,28 +3,28 @@
 {% ifequal datap None %}
 <p class="nodata">[no data]</p>
 {% else %}
-    {% ifequal datap.metric.unit.observation_type.model "objectobservation" %}
-    <ol class="observation">{% for item in datap.objectobservation.value|slice:slice_val %}
+    {% ifequal datap.observation_type "objectobservation" %}
+    <ol class="observation">{% for item in datap.data|slice:slice_val %}
         <li {% if forloop.last %}class="last"{% endif %}>{{ item.name|urlizetrunc:25 }}&nbsp;{% if item.value %}<span>[{{ item.value }}]</span>{% endif %}</li>{% endfor %}
     </ol>
     {% endifequal %}
-    {% ifequal datap.metric.unit.observation_type.model "ratioobservation" %}
-    <p class="observation" data-value="{{ datap.ratioobservation.value }}">{% spaceless %}{% ifequal datap.ratioobservation.antecedent.metric.unit.observation_unit "seconds" %}
-        {{ datap.ratioobservation.value|secondstoduration }}
+    {% ifequal datap.observation_type "ratioobservation" %}
+    <p class="observation" data-value="{{ datap.data }}">{% spaceless %}{% ifequal datap.antecedent.metric.unit.observation_unit "seconds" %}
+        {{ datap.data|secondstoduration }}
         {% else %}
             {% ifequal datap.metric.unit.observation_unit "percentage"  %}
-            {{ datap.ratioobservation.value|percentage:2}}
+            {{ datap.data|percentage:2}}
             {% else %}
-            {{ datap.ratioobservation.value|floatformat:1}}
+            {{ datap.data|floatformat:1}}
             {% endifequal %}
         {% endifequal %}
         {% endspaceless %}</p>
     {% endifequal %}
-    {% ifequal datap.metric.unit.observation_type.model "countobservation" %}
-    <p class="observation" data-value="{{ datap.countobservation.value }}">{% spaceless %}{% ifequal datap.metric.unit.observation_unit "seconds" %}
-        {{ datap.countobservation.value|secondstoduration }}
+    {% ifequal datap.observation_type "countobservation" %}
+    <p class="observation" data-value="{{ datap.data }}">{% spaceless %}{% ifequal datap.metric.unit.observation_unit "seconds" %}
+        {{ datap.data|secondstoduration }}
         {% else %}
-        {{ datap.countobservation.value|intcomma }}
+        {{ datap.data|intcomma }}
         {% endifequal %}
     {% endspaceless %}</p>
     {% endifequal %}
