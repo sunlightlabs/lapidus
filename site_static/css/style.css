@@ -520,20 +520,28 @@ td.top-traffic-referrers {
     background-repeat: no-repeat;
 }
 
-.good {
+.increased {
     color: #9CC71B;
-    background-image: url('/static/img/arrow_greyUp.png');
-    background-position: left center;
+    background-image: url('/static/img/arrow_green.png');
     background-repeat: no-repeat;
-    padding-left: 16px;
+    background-position: 95% 45%;
+    padding-right: 22px;
 }
 
-.bad {
+.decreased {
     color: #F74D0F;
-    background-image: url('/static/img/arrow_greyDown.png');
-    background-position: left center;
+    background-image: url('/static/img/arrow_red.png');
     background-repeat: no-repeat;
-    padding-left: 16px;
+    background-position: 95% 45%;
+    padding-right: 22px;
+}
+
+td.increased > * {
+    color: #9CC71B;
+}
+
+td.decreased > * {
+    color: #F74D0F;
 }
 
 .featured {
