@@ -41,3 +41,7 @@ GA_EMAIL = ''
 GA_PASSWORD = ''
 
 RATIOS_CONFIG = os.path.join(PROJECT_ROOT, '')
+
+UNIT_COMPARE_PAST = (
+    'visits'
+)

@@ -8,6 +8,12 @@ from django.core.urlresolvers import reverse
 from django.db.models import Q, Sum, Avg
 from django.http import Http404
 
+from django.conf import settings
+UNIT_COMPARE_PAST = getattr(settings, "UNIT_COMPARE_PAST", None)
+
+# limit how large of a comparison we will do, as I don't know how this might bite me.
+COMPARE_PAST_DAY_LIMIT = 60
+
 import datetime, calendar
 
 import json
@@ -65,7 +71,7 @@ def get_observations(request, category='web', project=None):
         to_datetime = datetime.datetime.combine(raw_to_date,  datetime.time(23, 59, 59)) if raw_to_date else None
         if from_datetime and to_datetime:
             if from_datetime.date() == to_datetime.date():
-                return HttpResponseRedirect("{0}?{1}".format(reverse('get-observations'), "from_datetime={0}".format(from_datetime.date())))
+                return HttpResponseRedirect("{0}?{1}".format(request.path, "from_datetime={0}".format(from_datetime.date())))
             else:
                 object_list, from_datetime, to_datetime = observations_for_daterange(   projects, 
                                                                                         ordered_units, 
@@ -161,7 +167,8 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
             latest_obs = metric.related_observations.filter(to_datetime__lte=to_datetime).latest('to_datetime')
             obs_dict = {
                 'metric': metric,
-                unit.observation_type.model : latest_obs
+                'observation_type': unit.observation_type.model,
+                'data' : latest_obs.data
             }
             return obs_dict
         except Exception, e:
@@ -178,9 +185,8 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
                     obs_aggregate = obs_qs.aggregate(value=Sum('value'))
                     obs_dict = {
                         'metric': metric,
-                        unit.observation_type.model : {
-                            'value': obs_aggregate['value']
-                        },
+                        'data': obs_aggregate['value'],
+                        'observation_type': unit.observation_type.model,
                         'observations': obs_qs
                     }
                     return obs_dict
@@ -194,10 +200,9 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
                     aggregate_value = float(antecedent_aggregate['value'])/float(consequent_aggregate['value'])
                     obs_dict = {
                         'metric': metric,
-                        unit.observation_type.model : {
-                            'antecedent': obs_qs[0].antecedent,
-                            'value': aggregate_value
-                        },
+                        'antecedent': obs_qs[0].antecedent,
+                        'observation_type': unit.observation_type.model,
+                        'data': aggregate_value,
                         'observations': obs_qs
                     }
                     return obs_dict
@@ -206,6 +211,7 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
             else:
                 obs_dict = {
                     'metric': metric,
+                    'observation_type': unit.observation_type.model,
                     'observations': obs_qs
                 }
                 return obs_dict
@@ -213,7 +219,7 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
 
 def observations_for_daterange(projects, ordered_units, extra_units, from_datetime, to_datetime):
     object_list = []
-    
+
     for project in projects:
         obj = {
             'project': project,
@@ -222,7 +228,19 @@ def observations_for_daterange(projects, ordered_units, extra_units, from_dateti
             'annotations': []
         }
         for ordered_unit in ordered_units:
-            obj['observations'].append( _aggregate_observation_by_class(ordered_unit, project, from_datetime, to_datetime) )
+            logger.debug('ordered_unit {0} in UNIT_COMPARE_PAST'.format(ordered_unit))
+            agg_obs = _aggregate_observation_by_class(ordered_unit, project, from_datetime, to_datetime)
+            if ordered_unit.slug in UNIT_COMPARE_PAST:
+                time_diff = (to_datetime-from_datetime)
+                if time_diff.days <= COMPARE_PAST_DAY_LIMIT: # limit how large of a comparison we will do
+                    past_from_datetime = datetime.datetime.combine(from_datetime - (to_datetime-from_datetime), datetime.time(0,0,0))
+                    past_to_datetime = datetime.datetime.combine(from_datetime-datetime.timedelta(days=1), datetime.time(23,59,59))
+                    past_agg_obs =  _aggregate_observation_by_class(ordered_unit, project, past_from_datetime, past_to_datetime)
+                    logger.debug('ordered_unit {0} in UNIT_COMPARE_PAST'.format(ordered_unit))
+                    if past_agg_obs:
+                        agg_obs['past'] = past_agg_obs
+                # agg_obs['increase'] = past_agg_obs[ordered_unit.observation_type.model]['value'] < agg_obs[ordered_unit.observation_type.model]['value']
+            obj['observations'].append( agg_obs )
         for extra_unit in extra_units:
             obj['extra_observations'].append( _aggregate_observation_by_class(extra_unit, project, from_datetime, to_datetime) )
         obj['annotations'] = Annotation.objects.filter(project=project).order_by('-timestamp')

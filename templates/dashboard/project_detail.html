@@ -12,8 +12,23 @@
         </tr>
     </thead>
     <tbody>
-        <tr>{% for datap in object.observations %}
-            <td class='{{ datap.metric.unit.slug }} {{ datap.metric.unit.observation_type.model }}'>
+        <tr class='primary'>{% for datap in object.observations %}
+            <td class='{{ datap.metric.unit.slug }} {{ datap.observation_type }}{% if datap.past %} {% spaceless %}
+            {% if datap.past.data > datap.data %}
+            decreased
+            {% else %}{% if datap.past.data < datap.data %}
+            increased
+            {% else %}
+            unchanged
+            {% endif %}{% endif %}
+            {% endspaceless %}{% endif %}' {% if datap.past %}data-past-value="{{ datap.past.data }}" title="{% spaceless %}{% if datap.past.data > datap.data %}
+            Decreased
+            {% else %}{% if datap.past.data < datap.data %}
+            Increased
+            {% else %}
+            Unchanged
+            {% endif %}{% endif %}
+            {% endspaceless %} from {% include "dashboard/snippets/_render_observation_value.html" with datap=datap.past %} in the previous period"{% endif %}'>
                 {% if datap %}{% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}{% else %}&nbsp;{% endif %}
             </td>{% endfor %}
             <td>&nbsp;</td>
@@ -23,25 +38,25 @@
 {% for datap in object.observations %}{% if "observations" in datap %}
 <section id="{{ datap.metric.unit.slug }}" class="unit-observations">
     <h2>{{ datap.metric.unit.name|title }}</h2>
-    {% ifnotequal datap.metric.unit.observation_type.model "objectobservation"  %}
+    {% ifnotequal datap.observation_type "objectobservation"  %}
     <div class="aggregate-value">
-        {% ifequal datap.metric.unit.observation_type.model "ratioobservation" %}
-        <p class="observation" data-value="{{ datap.ratioobservation.value }}">{% spaceless %}{% ifequal datap.ratioobservation.antecedent.metric.unit.observation_unit "seconds" %}
-            {{ datap.ratioobservation.value|secondstoduration }}
+        {% ifequal datap.observation_type "ratioobservation" %}
+        <p class="observation" data-value="{{ datap.data }}">{% spaceless %}{% ifequal datap.data.antecedent.metric.unit.observation_unit "seconds" %}
+            {{ datap.data|secondstoduration }}
             {% else %}
                 {% ifequal datap.metric.unit.observation_unit "percentage"  %}
-                {{ datap.ratioobservation.value|percentage:2}}
+                {{ datap.data|percentage:2}}
                 {% else %}
-                {{ datap.ratioobservation.value|floatformat:1}}
+                {{ datap.data|floatformat:1}}
                 {% endifequal %}
             {% endifequal %}
             {% endspaceless %}</p>
         {% endifequal %}
-        {% ifequal datap.metric.unit.observation_type.model "countobservation" %}
-        <p class="observation" data-value="{{ datap.countobservation.value }}">{% spaceless %}{% ifequal datap.metric.unit.observation_unit "seconds" %}
-            {{ datap.countobservation.value|secondstoduration }}
+        {% ifequal datap.observation_type "countobservation" %}
+        <p class="observation" data-value="{{ datap.data }}">{% spaceless %}{% ifequal datap.metric.unit.observation_unit "seconds" %}
+            {{ datap.data|secondstoduration }}
             {% else %}
-            {{ datap.countobservation.value|intcomma }}
+            {{ datap.data|intcomma }}
             {% endifequal %}
         {% endspaceless %}</p>
         {% endifequal %}
