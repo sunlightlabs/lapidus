@@ -45,3 +45,7 @@ RATIOS_CONFIG = os.path.join(PROJECT_ROOT, '')
 UNIT_COMPARE_PAST = (
     'visits'
 )
+
+UNIT_DISPLAY_EXCLUDE = (
+    'time-on-site',
+)

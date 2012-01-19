@@ -9,10 +9,12 @@ from django.db.models import Q, Sum, Avg
 from django.http import Http404
 
 from django.conf import settings
-UNIT_COMPARE_PAST = getattr(settings, "UNIT_COMPARE_PAST", None)
+UNIT_COMPARE_PAST = getattr(settings, "UNIT_COMPARE_PAST", ())
 
 # limit how large of a comparison we will do, as I don't know how this might bite me.
 COMPARE_PAST_DAY_LIMIT = 60
+
+UNIT_DISPLAY_EXCLUDE = getattr(settings, "UNIT_DISPLAY_EXCLUDE", ())
 
 import datetime, calendar
 
@@ -54,7 +56,7 @@ def get_observations(request, category='web', project=None):
     except Exception, e:
         latest_observation = None
     
-    extra_units = Unit.objects.select_related().filter(category=CATEGORY_DICT[category]).exclude(id__in=[u.id for u in ordered_units])
+    extra_units = Unit.objects.select_related().filter(category=CATEGORY_DICT[category]).exclude(id__in=[u.id for u in ordered_units]).exclude(slug__in=UNIT_DISPLAY_EXCLUDE)
     
     if project:
         projects = [Project.objects.get(slug=project)]
