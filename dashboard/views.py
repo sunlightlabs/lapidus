@@ -121,6 +121,8 @@ def observations_for_day(projects, ordered_units, extra_units, from_datetime):
         }
         for ordered_unit in ordered_units:
             logger.debug('unit in unitcol is {unit}'.format(unit=ordered_unit.slug))
+            obs_class = ordered_unit.observation_type.model_class()
+            
             try:
                 metric = Metric.objects.get(project=project, unit=ordered_unit)
                 if metric.is_cumulative:
@@ -133,7 +135,32 @@ def observations_for_day(projects, ordered_units, extra_units, from_datetime):
                 else:
                     try:
                         proj_obs = metric.related_observations.filter(to_datetime__lte=to_datetime, from_datetime__gte=from_datetime).latest('to_datetime')
-                        obj['observations'].append(proj_obs)
+                        obs_dict = {
+                            'metric': metric,
+                            'observation_model': proj_obs.observation_model,
+                            'data' : proj_obs.data
+                        }
+                        if obs_class is RatioObservation:
+                            obs_dict['antecedent'] = proj_obs.antecedent
+                        
+                        if ordered_unit.slug in UNIT_COMPARE_PAST:
+                            past_from_datetime = datetime.datetime.combine(from_datetime-datetime.timedelta(days=1), datetime.time(0,0,0))
+                            past_to_datetime = datetime.datetime.combine(from_datetime-datetime.timedelta(days=1), datetime.time(23,59,59))
+                            try:
+                                past_proj_obs =  metric.related_observations.filter(to_datetime__lte=past_to_datetime, from_datetime__gte=past_from_datetime).latest('to_datetime')
+                                logger.debug('ordered_unit {0} in UNIT_COMPARE_PAST'.format(ordered_unit))
+                                if past_proj_obs:
+                                    obs_dict['past'] = {
+                                        'metric': metric,
+                                        'observation_model': past_proj_obs.observation_model,
+                                        'data' : past_proj_obs.data
+                                    }
+                                    if obs_class is RatioObservation:
+                                        obs_dict['past']['antecedent'] = past_proj_obs.antecedent
+                            except Exception, e:
+                                pass
+                        
+                        obj['observations'].append(obs_dict)
                     except Exception, e:
                         logger.debug("No observation for {unit}".format(unit=ordered_unit))
                         obj['observations'].append(None)
@@ -169,7 +196,7 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
             latest_obs = metric.related_observations.filter(to_datetime__lte=to_datetime).latest('to_datetime')
             obs_dict = {
                 'metric': metric,
-                'observation_type': unit.observation_type.model,
+                'observation_model': latest_obs.observation_model,
                 'data' : latest_obs.data
             }
             return obs_dict
@@ -188,7 +215,7 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
                     obs_dict = {
                         'metric': metric,
                         'data': obs_aggregate['value'],
-                        'observation_type': unit.observation_type.model,
+                        'observation_model': unit.observation_type.model,
                         'observations': obs_qs
                     }
                     return obs_dict
@@ -203,7 +230,7 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
                     obs_dict = {
                         'metric': metric,
                         'antecedent': obs_qs[0].antecedent,
-                        'observation_type': unit.observation_type.model,
+                        'observation_model': unit.observation_type.model,
                         'data': aggregate_value,
                         'observations': obs_qs
                     }
@@ -213,7 +240,7 @@ def _aggregate_observation_by_class(unit, project, from_datetime, to_datetime):
             else:
                 obs_dict = {
                     'metric': metric,
-                    'observation_type': unit.observation_type.model,
+                    'observation_model': unit.observation_type.model,
                     'observations': obs_qs
                 }
                 return obs_dict

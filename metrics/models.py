@@ -138,13 +138,13 @@ class Observation(models.Model):
     
     data = property(_get_datapoint)
     
-    def _get_observationtype(self):
+    def _get_observationmodel(self):
         if self.metric:
             if self.metric.unit:
                 return self.metric.unit.observation_type.model
             return None
         return None
-    observation_type = property(_get_observationtype)
+    observation_model = property(_get_observationmodel)
     
     class Meta:
         ordering = ('-from_datetime',)

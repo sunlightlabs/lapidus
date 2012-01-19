@@ -58,13 +58,13 @@
                 {% else %}
                 Unchanged
                 {% endif %}{% endif %}
-                {% endspaceless %} from {% include "dashboard/snippets/_render_observation_value.html" with datap=datap.past %} in the previous period"{% endif %}>
+                {% endspaceless %} from {% include "dashboard/snippets/_render_observation_value.html" with datap=datap.past %} in the previous date range"{% endif %}>
                     {% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}
                 </td>{% endfor %}
             </tr>{% for datap in object.extra_observations %}{% if datap and datap.data %}
             <tr class="secondary {% if forloop.first %}first{% endif %}">
                 <th colspan=2 scope=row>{{ datap.metric.unit.name }}</th>
-                <td class='{{ datap.metric.unit.slug }} {{ datap.observation_type }}' colspan={{ numcols|add:"-1" }}>
+                <td class='{{ datap.metric.unit.slug }} {{ datap.observation_model }}' colspan={{ numcols|add:"-1" }}>
                     {% spaceless %}{% include "dashboard/snippets/_render_observation.html" with list_slice=":10" %}{% endspaceless %}
                 </td>
             </tr>{% endif %}{% endfor %}{% if object.annotations %}

@@ -12,7 +12,7 @@
     </thead>
     <tbody>
         <tr class='primary'>{% for datap in object.observations %}
-            <td class='{{ datap.metric.unit.slug }} {{ datap.observation_type }}{% if datap.past %} {% spaceless %}
+            <td class='{{ datap.metric.unit.slug }} {{ datap.observation_model }}{% if datap.past %} {% spaceless %}
             {% if datap.past.data > datap.data %}
             decreased
             {% else %}{% if datap.past.data < datap.data %}
@@ -27,7 +27,7 @@
             {% else %}
             Unchanged
             {% endif %}{% endif %}
-            {% endspaceless %} from {% include 'dashboard/snippets/_render_observation_value.html' with datap=datap.past %} in the previous period"{% endif %}>
+            {% endspaceless %} from {% include 'dashboard/snippets/_render_observation_value.html' with datap=datap.past %} in the previous date range"{% endif %}>
                 {% if datap %}{% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}{% else %}&nbsp;{% endif %}
             </td>{% endfor %}
             <td>&nbsp;</td>
@@ -45,9 +45,9 @@
 {% for datap in object.observations %}{% if "observations" in datap %}
 <section id="{{ datap.metric.unit.slug }}" class="unit-observations">
     <h2>{{ datap.metric.unit.name|title }}</h2>
-    {% ifnotequal datap.observation_type "objectobservation"  %}
+    {% ifnotequal datap.observation_model "objectobservation"  %}
     <div class="aggregate-value">
-        {% ifequal datap.observation_type "ratioobservation" %}
+        {% ifequal datap.observation_model "ratioobservation" %}
         <p class="observation" data-value="{{ datap.data }}">{% spaceless %}{% ifequal datap.data.antecedent.metric.unit.observation_unit "seconds" %}
             {{ datap.data|secondstoduration }}
             {% else %}
@@ -59,7 +59,7 @@
             {% endifequal %}
             {% endspaceless %}</p>
         {% endifequal %}
-        {% ifequal datap.observation_type "countobservation" %}
+        {% ifequal datap.observation_model "countobservation" %}
         <p class="observation" data-value="{{ datap.data }}">{% spaceless %}{% ifequal datap.metric.unit.observation_unit "seconds" %}
             {{ datap.data|secondstoduration }}
             {% else %}

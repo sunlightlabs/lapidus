@@ -1,7 +1,7 @@
 {% load dashboard_filters humanize %}
 {% with slice_val=list_slice|default:":5" %}{% spaceless %}
-{% ifequal datap.observation_type "objectobservation" %}{{ datap.data }}{% endifequal %}
-{% ifequal datap.observation_type "ratioobservation" %}
+{% ifequal datap.observation_model "objectobservation" %}{{ datap.data }}{% endifequal %}
+{% ifequal datap.observation_model "ratioobservation" %}
     {% ifequal datap.antecedent.metric.unit.observation_unit "seconds" %}
     {{ datap.data|secondstoduration }}
     {% else %}
@@ -12,7 +12,7 @@
         {% endifequal %}
     {% endifequal %}
 {% endifequal %}
-{% ifequal datap.observation_type "countobservation" %}
+{% ifequal datap.observation_model "countobservation" %}
     {% ifequal datap.metric.unit.observation_unit "seconds" %}
     {{ datap.data|secondstoduration }}
     {% else %}
