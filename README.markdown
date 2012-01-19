@@ -39,6 +39,12 @@ You may also want to edit `config/ratios.json` for additional ratios you want to
 
 The `UNIT_COMPARE_PAST` tuple allows you to determine what units will render a color indicator when comparing one date range to the same timedelta immediately before it. Basically this was put in so we could visually indicate whether a 'visits' metric increased or decreased from the previous period. This will work with other CountObservations and RatioObservations, but not ObjectObservations.
 
+`UNIT_DISPLAY_EXCLUDE` is a patch to exclude certain units from displaying as secondary observations. In particular, 'Time on Site' from GA is not useful to viewers (it is a sum of the time spent by each visitor), but it is used to calculate 'Average time on site per visit', so it is recorded.
+
 Once you have your database created and GA configured, you can start populating lapidus with Projects and Units, and then you can create metrics. The **loadga** command will create units and metrics for projects as defined in `config/ga.json`, but you must create the Project records before you can run that command.
 
 You can create a UnitList and assign it as default\_for for different categories (web, api, content, other) of metrics if you want to control which metrics appear on a dashboard. Otherwise, the dashboard will display all metrics for a particular category.
+
+
+
+

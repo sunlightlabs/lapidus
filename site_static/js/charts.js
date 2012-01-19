@@ -1,14 +1,16 @@
 jQuery(document).ready(function($) {
-    var annotation_dialog = $('#annotation_dialog').dialog({ resizable: false, width: 400, modal: true, autoOpen: false });
+    var dialog_title = $($('#annotation_dialog > h3')[0]).text();
+    $($('#annotation_dialog > h3')[0]).hide();
+    var annotation_dialog = $('#annotation_dialog').dialog({ resizable: false, width: 400, title:dialog_title, modal: true, autoOpen: false });
 
     $("#annotation_dialog > form").submit(function(event) {
         var form = $(this);
         var url = form.attr( 'action' );
         var data = form.serializeArray();
-        console.log(form);
+        // console.log(form);
         
         $.post(url, data, function(data, textStatus, jqXHR) {
-            console.log(textStatus);
+            if (console) console.log(textStatus);
         });
         
         event.preventDefault();

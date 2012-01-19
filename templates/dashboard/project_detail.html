@@ -8,7 +8,6 @@
         <tr>
             {% for datap in object.observations %}
             <th><span>{% if "observations" in datap %}<a href="#{{ datap.metric.unit.slug }}">{{ datap.metric.unit.name }}</a>{% else %}{{ datap.metric.unit.name }}{% endif %}</span></th>{% endfor %}
-            {% if object.annotations %}<th><span><a href="#annotations">Annotations</a></span></th>{% endif %}
         </tr>
     </thead>
     <tbody>
@@ -28,13 +27,21 @@
             {% else %}
             Unchanged
             {% endif %}{% endif %}
-            {% endspaceless %} from {% include "dashboard/snippets/_render_observation_value.html" with datap=datap.past %} in the previous period"{% endif %}'>
+            {% endspaceless %} from {% include 'dashboard/snippets/_render_observation_value.html' with datap=datap.past %} in the previous period"{% endif %}>
                 {% if datap %}{% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}{% else %}&nbsp;{% endif %}
             </td>{% endfor %}
             <td>&nbsp;</td>
         </tr>
     </tbody>
 </table>
+{% if object.annotations %}
+<section id="annotations">
+    <h2>Annotations</h2>
+    {% for a in object.annotations %}
+        <p><time datetime="{{ a.timestamp|date:"c" }}">{{ a.timestamp|date:"Y-m-d" }}</time>:&nbsp;<span>{{ a.text }}</span></p>
+    {% endfor %}
+</section>
+{% endif %}
 {% for datap in object.observations %}{% if "observations" in datap %}
 <section id="{{ datap.metric.unit.slug }}" class="unit-observations">
     <h2>{{ datap.metric.unit.name|title }}</h2>
@@ -75,15 +82,8 @@
         </table>        
     </div>
 </section>{% endif %}{% endfor %}
-{% if object.annotations %}
-<section id="annotations">
-    <h2>Annotations</h2>
-    {% for a in object.annotations %}
-        <p><time datetime="{{ a.timestamp|date:"c" }}">{{ a.timestamp|date:"Y-m-d" }}</time>:&nbsp;<span>{{ a.text }}</span></p>
-    {% endfor %}
-</section>
-{% endif %}
 <div id="annotation_dialog">
+    <h3>Add an Annotation</h3>
     <form action="{% url add-annotation %}" method="post" accept-charset="utf-8">{% csrf_token %}
         {{ annotation_form.as_p }}
         <p><input type="submit" value="submit"></p>
