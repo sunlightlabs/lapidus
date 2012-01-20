@@ -148,6 +148,10 @@ h2 {
     font-size: 150%;
 }
 
+h2 > a {
+    text-decoration: none;
+}
+
 h3 {
     margin-bottom: 8px;
 }
@@ -355,7 +359,9 @@ p.observation {
     font-size: 180%;
 }
 
+ol.observation { margin-bottom: 10px;}
 ol.observation > li {
+    list-style-type: decimal;
     padding-bottom: 3px;
     margin-bottom: 2px;
     border-bottom: 1px dashed #E9E9E9;
@@ -485,8 +491,79 @@ li {
     background-image: url('/static/img/blue_arrow_down.png');
 }
 
+/*
+.project section.unit-observations {
+    width: 470px;
+    float: left;
+    margin-right: 5px;
+}
+*/
+
+a.internal {
+    text-decoration: none;
+}
+
+.analytics-items a.internal {
+    position: absolute;
+    bottom: 10px;
+}
+
+.analytics-items p.observation {
+    font-size: 276.5%;
+}
+
+div.analytics-items  h2 {
+    margin-bottom: 20px;
+}
+
+div.analytics-items {
+    position: relative;
+}
+
+div.analytics-items > ul {
+    margin-left: 0px;
+}
+
+div.analytics-items li > div {
+    padding: 15px 40px;
+}
+
+div.analytics-items > ul > li {
+    position: relative;
+    width: 300px;
+    min-height: 182px;
+    margin: 0 7px 10px;
+    border: 1px solid #E1DFDA;
+    background-color: #F8F7F2;
+    vertical-align: top;
+    display: inline-block;
+    zoom: 1;
+    *display: inline;
+    _height: 140px;
+}
+
 #annotation_dialog {
     display: none;
+}
+
+#home-floater {
+    display: block;
+    padding: 8px 12px;
+    text-align: center;
+    background-color: #E1DFDA;
+    border: 1px solid #CAC8C2;
+    position: fixed;
+    left: 15px;
+    bottom: 10px;
+}
+
+#home-floater p {
+    margin: 0;
+}
+
+#home-floater a {
+    text-decoration: none;
+    font-weight: bold;
 }
 
 tr.primary > th {
@@ -520,20 +597,24 @@ td.top-traffic-referrers {
     background-repeat: no-repeat;
 }
 
-.increased {
+.increased { color: #9CC71B;}
+.increased .observation {
     color: #9CC71B;
     background-image: url('/static/img/arrow_green.png');
     background-repeat: no-repeat;
-    background-position: 95% 45%;
+    background-position: 95% 50%;
     padding-right: 22px;
+    display: inline;
 }
 
-.decreased {
+.decreased { color: #F74D0F; }
+.decreased .observation {
     color: #F74D0F;
     background-image: url('/static/img/arrow_red.png');
     background-repeat: no-repeat;
-    background-position: 95% 45%;
+    background-position: 95% 50%;
     padding-right: 22px;
+    display: inline;
 }
 
 td.increased > * {
@@ -573,10 +654,6 @@ p.metric {
     color: #274868;
     height: auto;
     width: auto;
-}
-
-.average-time-on-site-per-visit {
-    margin-left: 12px;
 }
 
 .balance {

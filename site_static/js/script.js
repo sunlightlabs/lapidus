@@ -25,8 +25,8 @@
         if (fromDate > toDate) dfFrom.datepicker("setDate", toDate);
     });
     
-    $('th').on('click', 'a[href^="#"]', function(event) {
-        event.preventDefault();
+    $('a[href^="#"].internal, #home-floater a').on('click', function(event) {
+        // event.preventDefault();
        $('html, body').animate({scrollTop: $( $(this).attr('href') ).offset().top}, 800);
     });
 }(jQuery));

@@ -1,18 +1,13 @@
 {% extends "dashboard/project_list.html" %}{% load dashboard_filters humanize %}
 
 {% block body_class %}project{% endblock body_class %}
-{% block content %}{% with object_list.0 as object %}
+{% block content %}{% with object=object_list.0 numcols=ordered_units|length|add:"1" %}
 <h1>{{ object.project.name }}</h1>
-<table id="analytics">
-    <thead>
-        <tr>
-            {% for datap in object.observations %}
-            <th><span>{% if "observations" in datap %}<a href="#{{ datap.metric.unit.slug }}">{{ datap.metric.unit.name }}</a>{% else %}{{ datap.metric.unit.name }}{% endif %}</span></th>{% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        <tr class='primary'>{% for datap in object.observations %}
-            <td class='{{ datap.metric.unit.slug }} {{ datap.observation_model }}{% if datap.past %} {% spaceless %}
+<div class='analytics-items clearfix'>
+    <ul>{% for datap in object.observations %}
+        <li><div>
+            <h2>{{ datap.metric.unit.name }}</h2>
+            <div class='{{ datap.metric.unit.slug }} {{ datap.observation_model }}{% if datap.past %} {% spaceless %}
             {% if datap.past.data > datap.data %}
             decreased
             {% else %}{% if datap.past.data < datap.data %}
@@ -28,12 +23,35 @@
             Unchanged
             {% endif %}{% endif %}
             {% endspaceless %} from {% include 'dashboard/snippets/_render_observation_value.html' with datap=datap.past %} in the previous date range"{% endif %}>
-                {% if datap %}{% spaceless %}{% include "dashboard/snippets/_render_observation.html" %}{% endspaceless %}{% else %}&nbsp;{% endif %}
-            </td>{% endfor %}
-            <td>&nbsp;</td>
-        </tr>
-    </tbody>
-</table>
+                {% include 'dashboard/snippets/_render_observation.html' %}                
+            </div>
+            {% if "observations" in datap %}<a class='internal' href="#{{ datap.metric.unit.slug }}">View details&hellip;</a>{% endif %}
+        </div></li>{% endfor %}
+        {% for datap in object.extra_observations %}{% if datap %}
+            <li><div>
+                <h2>{{ datap.metric.unit.name }}</h2>
+                <div class='{{ datap.metric.unit.slug }} {{ datap.observation_model }}{% if datap.past %} {% spaceless %}
+                {% if datap.past.data > datap.data %}
+                decreased
+                {% else %}{% if datap.past.data < datap.data %}
+                increased
+                {% else %}
+                unchanged
+                {% endif %}{% endif %}
+                {% endspaceless %}{% endif %}' {% if datap.past %}data-past-value="{{ datap.past.data }}" title="{% spaceless %}{% if datap.past.data > datap.data %}
+                Decreased
+                {% else %}{% if datap.past.data < datap.data %}
+                Increased
+                {% else %}
+                Unchanged
+                {% endif %}{% endif %}
+                {% endspaceless %} from {% include 'dashboard/snippets/_render_observation_value.html' with datap=datap.past %} in the previous date range"{% endif %}>
+                    {% include 'dashboard/snippets/_render_observation.html' %}                
+                </div>
+                {% if "observations" in datap %}<a class='internal' href="#{{ datap.metric.unit.slug }}">View details&hellip;</a>{% endif %}
+            </div></li>{% endif %}{% endfor %}
+    </ul>
+</div>
 {% if object.annotations %}
 <section id="annotations">
     <h2>Annotations</h2>
@@ -47,47 +65,55 @@
     <h2>{{ datap.metric.unit.name|title }}</h2>
     {% ifnotequal datap.observation_model "objectobservation"  %}
     <div class="aggregate-value">
-        {% ifequal datap.observation_model "ratioobservation" %}
-        <p class="observation" data-value="{{ datap.data }}">{% spaceless %}{% ifequal datap.data.antecedent.metric.unit.observation_unit "seconds" %}
-            {{ datap.data|secondstoduration }}
-            {% else %}
-                {% ifequal datap.metric.unit.observation_unit "percentage"  %}
-                {{ datap.data|percentage:2}}
-                {% else %}
-                {{ datap.data|floatformat:1}}
-                {% endifequal %}
-            {% endifequal %}
-            {% endspaceless %}</p>
-        {% endifequal %}
-        {% ifequal datap.observation_model "countobservation" %}
-        <p class="observation" data-value="{{ datap.data }}">{% spaceless %}{% ifequal datap.metric.unit.observation_unit "seconds" %}
-            {{ datap.data|secondstoduration }}
-            {% else %}
-            {{ datap.data|intcomma }}
-            {% endifequal %}
-        {% endspaceless %}</p>
-        {% endifequal %}
+        <p class="observation" data-value="{{ datap.data }}">{% include "dashboard/snippets/_render_observation_value.html" with datap=datap %}</p>
     </div>
     <div class="chart"></div>
-    <h3 class="table-toggle"><a href="#data-{{ datap.metric.unit.slug }}">View Data Table</a></h3>
+    <h3 class="table-toggle"><a href="#data-{{ datap.metric.unit.slug }}">Data Table</a></h3>
     {% endifnotequal %}
     <div id="data-{{ datap.metric.unit.slug }}" class="table-wrapper">
         <table class="data-table">{% for sub_datap in datap.observations reversed %}
             <tr class="datapoint">
                 <td><time data-milliseconds="{{ sub_datap.to_datetime|datetime_to_ms }}" datetime="{{ sub_datap.to_datetime|date:'c' }}">{{ sub_datap.to_datetime|date:'M d, Y' }}</time></td>
                 <td>
-                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" with datap=sub_datap list_slice=":20" %}{% endspaceless %}
+                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" with datap=sub_datap list_slice=":10" %}{% endspaceless %}
                 </td>
             </tr>{% endfor %}
         </table>        
     </div>
 </section>{% endif %}{% endfor %}
+{% for datap in object.extra_observations %}{% if "observations" in datap %}
+<section id="{{ datap.metric.unit.slug }}" class="unit-observations">
+    <h2>{{ datap.metric.unit.name|title }}</h2>
+    {% ifnotequal datap.observation_model "objectobservation"  %}
+    <div class="aggregate-value">
+        <p class="observation" data-value="{{ datap.data }}">{% include "dashboard/snippets/_render_observation_value.html" with datap=datap %}</p>
+    </div>
+    <div class="chart"></div>
+    <h3 class="table-toggle"><a href="#data-{{ datap.metric.unit.slug }}">Data Table</a></h3>
+    {% endifnotequal %}
+    <div id="data-{{ datap.metric.unit.slug }}" class="table-wrapper">
+        <table class="data-table">{% for sub_datap in datap.observations reversed %}
+            <tr class="datapoint">
+                <td><time data-milliseconds="{{ sub_datap.to_datetime|datetime_to_ms }}" datetime="{{ sub_datap.to_datetime|date:'c' }}">{{ sub_datap.to_datetime|date:'M d, Y' }}</time></td>
+                <td>
+                    {% spaceless %}{% include "dashboard/snippets/_render_observation.html" with datap=sub_datap list_slice=":10" %}{% endspaceless %}
+                </td>
+            </tr>{% endfor %}
+        </table>        
+    </div>
+</section>{% endif %}{% endfor %}
+
 <div id="annotation_dialog">
     <h3>Add an Annotation</h3>
     <form action="{% url add-annotation %}" method="post" accept-charset="utf-8">{% csrf_token %}
         {{ annotation_form.as_p }}
         <p><input type="submit" value="submit"></p>
     </form>
+</div>
+<div id="home-floater" class="">
+    <p>
+        <a href="#">Top &uarr;</a>
+    </p>
 </div>
 {% endwith %}{% endblock content %}
 

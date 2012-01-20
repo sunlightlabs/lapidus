@@ -1,5 +1,5 @@
-{% load dashboard_filters humanize %}
-{% with slice_val=list_slice|default:":5" %}{% spaceless %}
+{% load dashboard_filters humanize %}{% spaceless %}
+{% with slice_val=list_slice|default:":5" %}
 {% ifequal datap.observation_model "objectobservation" %}{{ datap.data }}{% endifequal %}
 {% ifequal datap.observation_model "ratioobservation" %}
     {% ifequal datap.antecedent.metric.unit.observation_unit "seconds" %}
@@ -19,4 +19,4 @@
     {{ datap.data|intcomma }}
     {% endifequal %}
 {% endifequal %}
-{% endspaceless %}{% endwith %}
+{% endwith %}{% endspaceless %}
