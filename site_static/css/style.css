@@ -512,7 +512,7 @@ a.internal {
     font-size: 276.5%;
 }
 
-div.analytics-items  h2 {
+div.analytics-items h2 {
     margin-bottom: 20px;
 }
 
@@ -604,8 +604,8 @@ td.top-traffic-referrers {
     background-repeat: no-repeat;
     background-position: 95% 50%;
     padding-right: 22px;
-    display: inline;
 }
+.project .increased .observation, .project .decreased .observation { display: inline; }
 
 .decreased { color: #F74D0F; }
 .decreased .observation {
@@ -614,7 +614,6 @@ td.top-traffic-referrers {
     background-repeat: no-repeat;
     background-position: 95% 50%;
     padding-right: 22px;
-    display: inline;
 }
 
 td.increased > * {
