@@ -1,0 +1,12 @@
+{
+    "influence-explorer": [
+        {
+            "name": "Number of Searches",
+            "type": "count",
+        "category": "web",
+          "period": "daily",
+             "url": "",
+        "date_arg": "date"
+        }
+    ]
+}

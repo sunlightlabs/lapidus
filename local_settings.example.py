@@ -49,3 +49,5 @@ UNIT_COMPARE_PAST = (
 UNIT_DISPLAY_EXCLUDE = (
     'time-on-site',
 )
+
+ENDPOINTS_CONFIG = os.path.join(PROJECT_ROOT, 'config/endpoints.json')
