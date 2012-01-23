@@ -85,7 +85,7 @@ class Command(BaseCommand):
 
                             dates = [from_date]
 
-                            if datedelta.days > 1:
+                            if datedelta and datedelta.days > 1:
                                 dates += [from_date + datetime.timedelta(days=r) for r in range(1, datedelta.days+1)]
                             
                             category_key = endpt.get('category', DEFAULT_CATEGORY)
