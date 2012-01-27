@@ -45,6 +45,17 @@ Once you have your database created and GA configured, you can start populating 
 
 You can create a UnitList and assign it as default\_for for different categories (web, api, content, other) of metrics if you want to control which metrics appear on a dashboard. Otherwise, the dashboard will display all metrics for a particular category.
 
+## Using the API
+
+Each Project is assigned an API key upon creation. The Lapidus API uses key-based authentication to control access on a per-project basis. So while the TastyPie documentation gives you an overview of [how to interact with the API](http://readthedocs.org/docs/django-tastypie/en/latest/interacting.html), you will need to remember to send your API key in a *X_APIKEY* value in the http headers (in addition to setting the *Accept* and *Content-Type* headers to 'application/json' when GETing/POSTing data). In order to POST observations you will need to submit a JSON object (which represents a 'daily' metric observation) like the following:
+
+	{
+        'value':            '8181',
+        'from_datetime':    '2012-01-21T00:00:00Z',
+        'to_datetime':      '2012-01-21T23:59:59Z'
+    }
+to a metric endpoint like `http://yourdashboard.com/api/metric/**##**/`, using the id number of the metric in place of the **##**. The 'value' must be an integer for CountObservation metrics or a ranked list that conforms to the validation.py LIST_SCHEMA for ObjectObservations. You can query `http://yourdashboard.com/api/project/` ( or `http://yourdashboard.com/api/project/**##**/` where **##** is your project's id) to the list of metrics for your project.
+
 
 
 

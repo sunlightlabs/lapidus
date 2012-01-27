@@ -1,11 +1,14 @@
 from django.conf import settings
-from lapidus.metrics.models import Unit, Project, Annotation, Metric, Observation, RatioObservation
+from lapidus.metrics.models import *
 from tastypie import fields
 from tastypie.authentication import Authentication
 from tastypie.authorization import Authorization
 from tastypie.http import HttpCreated, HttpNotImplemented
 from tastypie.resources import ModelResource
 import iso8601
+
+# helper
+def get_item_session_key(obj): return 'item-%s' % obj.id
 
 #
 # authentication and authorization
@@ -69,6 +72,10 @@ class ProjectResource(ModelResource):
         authorization = ProjectAuthorization()
         queryset = Project.objects.all()
         resource_name = 'project'
+        excludes = [
+            u'api_key',
+        ]
+        allowed_methods = ['get']
     
     # def dehydrate(self, bundle):
     #     bundle.data['metrics'] = [MetricResource().full_dehydrate(m) for m in bundle.obj.metrics.all()]
@@ -128,23 +135,42 @@ class MetricResource(ModelResource):
 class ObservationResource(ModelResource):
     metric = fields.ForeignKey(MetricResource, 'metric')
 
-    def dehydrate(self, bundle):
-        try:
-            bundle.data.update({'value': bundle.obj.value})
-        except:
-            pass
-        return bundle
-        
+    def get_object_data(self, obj, request):
+        model_class = obj.metric.unit.observation_type.model_class()
+        if model_class is CountObservation:
+            sub_obj = obj.countobservation
+        elif model_class is RatioObservation:
+            sub_obj = obj.ratioobservation
+        elif model_class is ObjectObservation:
+            sub_obj = obj.objectobservation
+        else:
+            sub_obj = obj
+        if hasattr(sub_obj, 'data'):
+            return sub_obj.data
+        return None
     
+    def alter_detail_data_to_serialize(self, request, bundle):
+        bundle.data['data'] = self.get_object_data(bundle.obj, request)
+        return bundle
+    
+    def alter_list_data_to_serialize(self, request, to_be_serialized):
+            # objects > resource
+        for bundle in to_be_serialized['objects']:
+            bundle.data['data'] = \
+                self.get_object_data(bundle.obj, request)
+        return to_be_serialized
+     
     class Meta:
         authentication = KeyAuthentication()
         authorization = ProjectAuthorization()
         queryset = Observation.objects.all()
         resource_name = 'observation'
+        limit = 20
 
 class MetricDetailResource(MetricResource):
-    observations = fields.ToManyField(ObservationResource, 'related_observations', null=True, full=True)
+    observations = fields.ToManyField(ObservationResource, 'related_observations', null=True, full=False)
     
-    # class Meta:
-    #     resource_name = 'metric_detail'
+    # class Meta(MetricResource.Meta):
+        # limit = 5
+        # resource_name = 'metric_detail'
     
