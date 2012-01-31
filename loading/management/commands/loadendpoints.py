@@ -149,8 +149,8 @@ class Command(BaseCommand):
                                     self._save_object(o)
                                 except URLError, e:
                                     raise CommandError( "Error retrieving '{url}: {reason}\n".format(url=endpoint_url, reason=e.reason) )
-                                
-                                self.stdout.write('Metric: {0}\n'.format(endpt['name']))
+                                if verbosity >= 2:
+                                    self.stdout.write('Metric: {0}\n'.format(endpt['name']))
                         else:
                             raise CommandError( "Endpoint object must have a name key, value pair\n" )
                         
