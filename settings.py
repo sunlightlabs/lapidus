@@ -1,4 +1,7 @@
 # Django settings for lapidus.
+import os
+
+PROJECT_ROOT = os.path.abspath(os.path.dirname(__file__))
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -24,6 +27,7 @@ STATICFILES_DIRS = (
     # Put strings here, like "/home/html/static" or "C:/www/django/static".
     # Always use forward slashes, even on Windows.
     # Don't forget to use absolute paths, not relative paths.
+    os.path.join(PROJECT_ROOT, 'site_static'),
 )
 
 # List of finder classes that know how to find static files in
