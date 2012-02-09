@@ -3,5 +3,5 @@ django-tastypie>=0.9.10
 -e git://github.com/django-extensions/django-extensions.git#egg=django-extensions
 iso8601plus
 validictory
-gunicorn=0.12.2
+gunicorn==0.12.2
 -e git://github.com/clintecker/python-googleanalytics.git#egg=python-googleanalytics
