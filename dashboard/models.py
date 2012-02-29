@@ -9,16 +9,16 @@ class BaseOrderedList(models.Model):
     name = models.CharField(blank=True, max_length=255)
     slug = models.SlugField(unique=True)
     # default = models.BooleanField(default=False)
-    default_for = models.IntegerField(choices=CATEGORIES, null=True)
+    default_for = models.IntegerField(choices=CATEGORIES, null=True, blank=True)
     _ordered_items = None
-    
+
     class Meta:
         abstract = True
         ordering = ('name',)
-    
+
     def __unicode__(self):
         return "List: {name}".format(name=self.name)
-    
+
     def save(self):
         if hasattr(self, 'default'):
             try:
@@ -29,7 +29,7 @@ class BaseOrderedList(models.Model):
             except ObjectDoesNotExist:
                 pass
         super(BaseOrderedList, self).save()
-        
+
     def ordered(self):
         """returns a list of units ordered by their membership order value"""
         if not self._ordered_items:
@@ -39,12 +39,12 @@ class BaseOrderedList(models.Model):
             else:
                 self._ordered_items =  []
         return self._ordered_items
-        
+
 class OrderedListItem(models.Model):
     order = models.SmallIntegerField(blank=False)
     class Meta:
         abstract = True
-    
+
     def __unicode__(self):
         return u"OrderedListItem"
 
@@ -55,14 +55,14 @@ class UnitList(BaseOrderedList):
 class UnitListMembership(OrderedListItem):
     orderedlist = models.ForeignKey(UnitList)
     unit = models.ForeignKey(Unit)
-    
+
     class Meta:
         ordering = ['order',]
 
 # Project list and Membership
 class ProjectList(BaseOrderedList):
     items = models.ManyToManyField(Project, through='ProjectListMembership')
-        
+
 class ProjectListMembership(OrderedListItem):
     orderedlist = models.ForeignKey(ProjectList)
     project = models.ForeignKey(Project)
@@ -80,4 +80,3 @@ class MetricListMembership(OrderedListItem):
 
     class Meta:
         ordering = ['order',]
-        
